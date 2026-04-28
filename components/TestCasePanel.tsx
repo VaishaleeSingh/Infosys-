@@ -64,7 +64,7 @@ export function TestCasePanel() {
         />
       </div>
 
-      <div className="flex-1 min-h-0 overflow-auto thin-scroll px-4 py-3">
+      <div className="flex-1 min-h-0 overflow-y-auto teal-scroll px-4 py-3">
         {activeTab === "testcase" && (
           <div>
             {/* Case pills — always show 3 (Case 1, Case 2, Case 3),
@@ -84,18 +84,18 @@ export function TestCasePanel() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <div className="text-[12px] text-gray-700 font-medium mb-1">
+                <div className="text-[13px] text-[#0B1B4A] font-semibold mb-1.5">
                   Input
                 </div>
-                <pre className="sample-box max-h-32 overflow-auto thin-scroll">
+                <pre tabIndex={0} className="sample-box sample-box-focus max-h-32 overflow-auto teal-scroll">
 {activeSample ? activeSample.input : "(hidden test case)"}
                 </pre>
               </div>
               <div>
-                <div className="text-[12px] text-gray-700 font-medium mb-1">
+                <div className="text-[13px] text-[#0B1B4A] font-semibold mb-1.5">
                   Expected output
                 </div>
-                <pre className="sample-box max-h-32 overflow-auto thin-scroll">
+                <pre tabIndex={0} className="sample-box sample-box-focus max-h-32 overflow-auto teal-scroll">
 {activeSample?.output ?? "(hidden test case)"}
                 </pre>
               </div>
@@ -105,7 +105,7 @@ export function TestCasePanel() {
 
         {activeTab === "custom" && (
           <div>
-            <div className="text-[12px] text-gray-700 font-medium mb-1">
+            <div className="text-[13px] text-[#0B1B4A] font-semibold mb-1.5">
               Custom Input (stdin)
             </div>
             <textarea
@@ -125,7 +125,7 @@ export function TestCasePanel() {
                 {customResult.error ? (
                   <ErrorBox text={customResult.error} />
                 ) : (
-                  <pre className="sample-box max-h-28 overflow-auto thin-scroll">
+                  <pre tabIndex={0} className="sample-box sample-box-focus max-h-28 overflow-auto teal-scroll">
 {customResult.actual}
                   </pre>
                 )}

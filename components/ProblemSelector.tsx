@@ -78,6 +78,7 @@ export function ProblemSelector() {
   const open = useStore((s) => s.sidebarOpen);
   const toggle = useStore((s) => s.toggleSidebar);
   const setOpen = useStore((s) => s.setSidebarOpen);
+  const toggleCamera = useStore((s) => s.toggleCamera);
 
   const selectedId = useStore((s) => s.selectedProblemId);
   const selectProblem = useStore((s) => s.selectProblem);
@@ -96,6 +97,7 @@ export function ProblemSelector() {
         style={{ backgroundColor: "#FFFFFF" }}
       >
         <button
+          type="button"
           onClick={toggle}
           aria-label={open ? "Close questions" : "Open questions"}
           title={open ? "Close questions" : "Open questions"}
@@ -104,8 +106,10 @@ export function ProblemSelector() {
           <HamburgerIcon className="w-4 h-4" />
         </button>
         <button
-          aria-label="Documents"
-          title="Documents"
+          type="button"
+          onClick={toggleCamera}
+          aria-label="Toggle camera"
+          title="Toggle camera"
           className="w-7 h-7 rounded flex items-center justify-center text-[#0B1B4A]/85 hover:text-[#0B1B4A] hover:bg-gray-100 transition-colors"
         >
           <svg

@@ -67,6 +67,8 @@ type Store = {
   consoleOpen: boolean;
   /** Questions dashboard sidebar — toggleable overlay. */
   sidebarOpen: boolean;
+  /** Whether the camera/recording pill in the header is visible. */
+  cameraVisible: boolean;
   isRunning: boolean;
   submitMessage: string | null;
 
@@ -93,6 +95,7 @@ type Store = {
   toggleConsole: () => void;
   toggleSidebar: () => void;
   setSidebarOpen: (open: boolean) => void;
+  toggleCamera: () => void;
   setConsoleOpen: (open: boolean) => void;
   setSubmitMessage: (msg: string | null) => void;
   triggerAutoSolve: (id: string, lang: Language) => void;
@@ -132,6 +135,7 @@ export const useStore = create<Store>((set, get) => ({
   // Default is `true` so candidates land with the test cases visible.
   consoleOpen: false,
   sidebarOpen: false,
+  cameraVisible: true,
   isRunning: false,
   submitMessage: null,
   editStartedAt: {},
@@ -199,6 +203,7 @@ export const useStore = create<Store>((set, get) => ({
   setConsoleOpen: (open) => set({ consoleOpen: open }),
   toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
   setSidebarOpen: (open) => set({ sidebarOpen: open }),
+  toggleCamera: () => set((s) => ({ cameraVisible: !s.cameraVisible })),
   setSubmitMessage: (msg) => set({ submitMessage: msg }),
 
   ensureEditStart: (id, lang) => {

@@ -394,6 +394,11 @@ export default function Page() {
                   <div className="flex-1 min-h-0 overflow-hidden">
                     <TestCasePanel />
                   </div>
+                  {/* Above the Toggle Console row:
+                      - Before Submit: a black partition line
+                      - After Submit (>=12 results): a decorative teal
+                        "scrollbar" strip. Both are purely visual. */}
+                  <DividerOrScrollbar />
                   <ActionBar
                     onExecute={handleExecute}
                     onSubmit={handleSubmit}
@@ -452,7 +457,7 @@ function ActionBar({
   const totalCount = problems.length;
 
   return (
-    <div className="shrink-0 h-11 border-t border-panelBorder bg-white flex items-center gap-2 px-3">
+    <div className="shrink-0 h-11 bg-white flex items-center gap-2 px-3">
       <button
         onClick={() => toggleConsole()}
         className="inline-flex items-center gap-1 text-[13px] font-semibold text-[#0B1B4A] hover:text-[#0B1B4A]/80 transition-colors"
@@ -691,6 +696,31 @@ function ConsolePane({ onClose }: { onClose: () => void }) {
 {last ? (last.error ? last.error : last.actual || "(no output)") : "Run your code to see console output here."}
         </pre>
       </div>
+    </div>
+  );
+}
+
+/**
+ * Partition divider that switches between a thin black line (before
+ * Submit) and a decorative teal scrollbar strip (after Submit). The
+ * teal version is purely visual — it doesn't actually scroll.
+ */
+function DividerOrScrollbar() {
+  const selectedId = useStore((s) => s.selectedProblemId);
+  const runResults = useStore(
+    (s) => s.runResultsByProblem[selectedId] ?? []
+  );
+  const submitted = runResults.length >= 12;
+  if (!submitted) {
+    return (
+      <div className="shrink-0 px-0 bg-white">
+        <div className="h-px w-full" style={{ background: "#0B1B4A" }} />
+      </div>
+    );
+  }
+  return (
+    <div className="shrink-0 px-4 py-1.5 bg-white">
+      <div className="h-1.5 w-full rounded-full" style={{ background: "#14C9A4" }} />
     </div>
   );
 }

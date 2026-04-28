@@ -36,6 +36,7 @@ export function Header() {
   const logout = useAuthStore((s) => s.logout);
   void logout;
   const completed = useStore((s) => s.completedProblems);
+  const cameraVisible = useStore((s) => s.cameraVisible);
 
   const [remaining, setRemaining] = useState(TOTAL_SECONDS);
   const [reviewOpen, setReviewOpen] = useState(false);
@@ -88,18 +89,21 @@ export function Header() {
           <div className="inline-flex items-center h-8 px-4 rounded-md bg-white text-[#0B1B4A] text-[13px] font-semibold tracking-tight shadow-sm">
             <span>{fmt(remaining)}</span>
           </div>
-          {/* Separate camera/recording pill */}
-          <div className="inline-flex items-center justify-center h-8 w-9 rounded-md bg-white text-[#0B1B4A] shadow-sm">
-            <svg
-              viewBox="0 0 16 16"
-              className="w-4 h-4"
-              fill="currentColor"
-              aria-hidden
-            >
-              <rect x="2" y="4" width="9" height="8" rx="1.5" />
-              <path d="M11 7 L14 5 L14 11 L11 9 Z" />
-            </svg>
-          </div>
+          {/* Separate camera/recording pill — toggleable via the
+              Documents icon in the sidebar rail. */}
+          {cameraVisible && (
+            <div className="inline-flex items-center justify-center h-8 w-9 rounded-md bg-white text-[#0B1B4A] shadow-sm">
+              <svg
+                viewBox="0 0 16 16"
+                className="w-4 h-4"
+                fill="currentColor"
+                aria-hidden
+              >
+                <rect x="2" y="4" width="9" height="8" rx="1.5" />
+                <path d="M11 7 L14 5 L14 11 L11 9 Z" />
+              </svg>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
