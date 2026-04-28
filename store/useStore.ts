@@ -65,6 +65,8 @@ type Store = {
   completedProblems: Record<string, true>;
 
   consoleOpen: boolean;
+  /** Questions dashboard sidebar — toggleable overlay. */
+  sidebarOpen: boolean;
   isRunning: boolean;
   submitMessage: string | null;
 
@@ -89,6 +91,8 @@ type Store = {
   markCompleted: (id: string) => void;
   setIsRunning: (running: boolean) => void;
   toggleConsole: () => void;
+  toggleSidebar: () => void;
+  setSidebarOpen: (open: boolean) => void;
   setConsoleOpen: (open: boolean) => void;
   setSubmitMessage: (msg: string | null) => void;
   triggerAutoSolve: (id: string, lang: Language) => void;
@@ -126,12 +130,13 @@ export const useStore = create<Store>((set, get) => ({
   //   false → both test cases AND console hidden; editor fills the
   //           full right column.
   // Default is `true` so candidates land with the test cases visible.
-  consoleOpen: true,
+  consoleOpen: false,
+  sidebarOpen: false,
   isRunning: false,
   submitMessage: null,
   editStartedAt: {},
   autoSolvedByProblem: {},
-  splitHorizontal: 0.55, // left (problem) gets 55% of right area by default
+  splitHorizontal: 0.35, // left (problem) gets 35% by default — matches the visual narrow proportions
   splitVertical: 0.62, // editor gets 62% of the right column's height
 
   selectProblem: (id) =>
@@ -192,6 +197,8 @@ export const useStore = create<Store>((set, get) => ({
   setIsRunning: (running) => set({ isRunning: running }),
   toggleConsole: () => set((s) => ({ consoleOpen: !s.consoleOpen })),
   setConsoleOpen: (open) => set({ consoleOpen: open }),
+  toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
+  setSidebarOpen: (open) => set({ sidebarOpen: open }),
   setSubmitMessage: (msg) => set({ submitMessage: msg }),
 
   ensureEditStart: (id, lang) => {

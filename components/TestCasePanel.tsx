@@ -1,36 +1,21 @@
 "use client";
 
 /**
- * Bottom test case panel (re-built to match the real Infosys layout
- * visible in the later screenshots).
+ * Bottom test case panel — matches the Infosys workspace reference.
  *
- * Structure:
- *
- *   ┌── Test case ──── Custom Input ──── Result ────────────┐
- *   │                                                       │
- *   │  [ Case 1 ] [ Case 2 ] [ Case 3 ]                     │
- *   │                                                       │
- *   │  Input                       Expected output          │
- *   │  ┌───────────────────┐       ┌───────────────────┐    │
- *   │  │ 4                 │       │ 4                 │    │
- *   │  │ 5                 │       │                   │    │
- *   │  │ 5 5               │       │                   │    │
- *   │  └───────────────────┘       └───────────────────┘    │
- *   │                                                       │
- *   │                              [ Execute ]  [ Submit ]  │
- *   ├───────────────────────────────────────────────────────┤
- *   │ Toggle Console ∨                          9/20        │
- *   └───────────────────────────────────────────────────────┘
- *
- * Top tabs:
- *   - "Test case": sample cases with Input + Expected Output side-by-side.
- *   - "Custom Input": textarea for the candidate's own stdin.
- *   - "Result": after Execute/Submit, shows per-case pass/fail + timings.
- *
- * Execute runs only the currently-focused case (Test case tab → current
- * Case N; Custom Input tab → the custom text). Submit runs ALL samples
- * and, on full pass, marks the problem completed (tick appears in the
- * sidebar and the progress counter bumps).
+ * Tabs:
+ *   - Test case   : sample inputs in side-by-side Input + Expected
+ *                   Output boxes, with rounded "Case N" pills for
+ *                   switching between samples.
+ *   - Custom Input: textarea for the candidate's own stdin.
+ *   - Result      : two flavours.
+ *                     · After Submit (all samples), shows a grid of
+ *                       "Case N ✓ / ✗" rounded pills with a legend at
+ *                       the bottom (Passed / Failed / Timed Out /
+ *                       Error). Errored runs show a red error box.
+ *                     · After Execute on Test case or Custom Input,
+ *                       shows a table view with Input | Expected
+ *                       output | Output | Status columns.
  */
 
 import { useStore, type RunResult } from "@/store/useStore";
@@ -51,18 +36,17 @@ export function TestCasePanel() {
   const customResult = useStore(
     (s) => s.customRunResultByProblem[selectedId]
   );
-  const submitMsg = useStore((s) => s.submitMessage);
+  const isRunning = useStore((s) => s.isRunning);
 
   const problem = getProblemById(selectedId);
   if (!problem) return null;
 
   const activeSample = problem.samples[activeIdx];
-  const activeResult = runResults.find((r) => r.caseIndex === activeIdx);
 
   return (
     <div className="h-full bg-white flex flex-col min-h-0">
-      {/* Top tabs: Test case | Custom Input | Result */}
-      <div className="shrink-0 flex items-center border-b border-panelBorder bg-white">
+      {/* Top tabs */}
+      <div className="shrink-0 flex items-center justify-around border-b border-panelBorder bg-white">
         <TopTab
           label="Test case"
           active={activeTab === "testcase"}
@@ -77,79 +61,42 @@ export function TestCasePanel() {
           label="Result"
           active={activeTab === "result"}
           onClick={() => setActiveTab("result")}
-          badge={
-            runResults.length > 0
-              ? `${runResults.filter((r) => r.passed === true).length}/${runResults.length}`
-              : undefined
-          }
         />
       </div>
 
-      {/* Body — switches by top tab. Scrollable so the action row and
-          footer below never get clipped by the parent frame. */}
       <div className="flex-1 min-h-0 overflow-auto thin-scroll px-4 py-3">
         {activeTab === "testcase" && (
           <div>
-            {/* Case pills */}
-            <div className="flex items-center gap-2 mb-3">
-              {[0, 1, 2].map((i) => {
-                const disabled = !problem.samples[i];
-                const isActive = i === activeIdx;
-                return (
-                  <button
-                    key={i}
-                    disabled={disabled}
-                    onClick={() => setActive(i)}
-                    className={clsx(
-                      "px-3 h-7 text-[12px] rounded border transition-colors",
-                      isActive
-                        ? "bg-infy-500 text-white border-infy-600"
-                        : "bg-white text-gray-700 border-panelBorder hover:bg-gray-50",
-                      disabled && "opacity-40 cursor-not-allowed"
-                    )}
-                  >
-                    Case {i + 1}
-                  </button>
-                );
-              })}
-              {activeResult && (
-                <span
-                  className={clsx(
-                    "ml-auto text-[12px] px-2 py-0.5 rounded font-semibold",
-                    activeResult.error
-                      ? "bg-red-100 text-red-700"
-                      : activeResult.passed === true
-                      ? "bg-green-100 text-green-700"
-                      : activeResult.passed === false
-                      ? "bg-amber-100 text-amber-700"
-                      : "bg-gray-100 text-gray-700"
-                  )}
-                >
-                  {activeResult.error
-                    ? "Error"
-                    : activeResult.passed === true
-                    ? `Passed · ${activeResult.timeMs.toFixed(0)} ms`
-                    : activeResult.passed === false
-                    ? "Wrong Answer"
-                    : `Ran · ${activeResult.timeMs.toFixed(0)} ms`}
-                </span>
-              )}
+            {/* Case pills — always show 3 (Case 1, Case 2, Case 3),
+                even when the problem ships fewer sample inputs. The
+                missing pills are rendered as empty placeholders so the
+                layout matches the reference. */}
+            <div className="flex items-center gap-2 mb-3 flex-wrap">
+              {[0, 1, 2].map((i) => (
+                <CasePill
+                  key={i}
+                  index={i}
+                  active={i === activeIdx}
+                  onClick={() => setActive(i)}
+                />
+              ))}
             </div>
 
-            {/* Side-by-side: Input / Expected Output */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <div className="text-[12px] text-gray-600 mb-1">Input</div>
+                <div className="text-[12px] text-gray-700 font-medium mb-1">
+                  Input
+                </div>
                 <pre className="sample-box max-h-32 overflow-auto thin-scroll">
-{activeSample ? activeSample.input : ""}
+{activeSample ? activeSample.input : "(hidden test case)"}
                 </pre>
               </div>
               <div>
-                <div className="text-[12px] text-gray-600 mb-1">
+                <div className="text-[12px] text-gray-700 font-medium mb-1">
                   Expected output
                 </div>
                 <pre className="sample-box max-h-32 overflow-auto thin-scroll">
-{activeSample?.output ?? ""}
+{activeSample?.output ?? "(hidden test case)"}
                 </pre>
               </div>
             </div>
@@ -158,26 +105,30 @@ export function TestCasePanel() {
 
         {activeTab === "custom" && (
           <div>
-            <div className="text-[12px] text-gray-600 mb-1">
+            <div className="text-[12px] text-gray-700 font-medium mb-1">
               Custom Input (stdin)
             </div>
             <textarea
               value={customInput}
               onChange={(e) => setCustomInput(selectedId, e.target.value)}
               className="w-full h-28 resize-none rounded border border-panelBorder bg-[#F4F5F7] font-mono text-[13px] p-2 focus:outline-none focus:border-infy-400"
-              placeholder="Type or paste your own input here…"
+              placeholder="Type or paste your own input here..."
             />
             {customResult && (
               <div className="mt-3">
-                <div className="text-[12px] text-gray-600 mb-1">
+                <div className="text-[12px] text-gray-700 font-medium mb-1">
                   Output{" "}
-                  <span className="text-gray-400">
+                  <span className="text-gray-400 font-normal">
                     · {customResult.timeMs.toFixed(0)} ms
                   </span>
                 </div>
-                <pre className="sample-box max-h-28 overflow-auto thin-scroll">
-{customResult.error ?? customResult.actual ?? ""}
-                </pre>
+                {customResult.error ? (
+                  <ErrorBox text={customResult.error} />
+                ) : (
+                  <pre className="sample-box max-h-28 overflow-auto thin-scroll">
+{customResult.actual}
+                  </pre>
+                )}
               </div>
             )}
           </div>
@@ -185,46 +136,154 @@ export function TestCasePanel() {
 
         {activeTab === "result" && (
           <ResultView
+            isRunning={isRunning}
             runResults={runResults}
             customResult={customResult}
-            submitMsg={submitMsg}
+            samples={problem.samples}
           />
         )}
       </div>
-
-      {/* Execute / Submit and the N/total progress counter now live on
-          a persistent ActionBar in the page layout — see app/page.tsx.
-          Keeping them there means they stay visible on every tab and
-          even when Toggle Console is hiding this whole pane. */}
     </div>
   );
 }
 
-/**
- * Result tab body — now merges the classic "per-case verdict" list
- * with the HackerRank-style console output into a SINGLE scrollable
- * view. Parent body already has overflow-auto, so this component just
- * stacks sections vertically and lets the parent handle scrolling.
- *
- * Layout (top → bottom):
- *   1. Big summary banner ("All N test cases passed ✓")
- *   2. Per-case verdict cards (tick / cross / error + timing + Your Output)
- *   3. Custom Input run (if present) with its stdout
- *   4. Submit message (success / partial-pass)
- */
+/* ------------------------------------------------------------------ */
+/*  Top tabs                                                           */
+/* ------------------------------------------------------------------ */
+function TopTab({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={clsx(
+        "h-10 px-6 text-[13px] transition-colors relative",
+        active
+          ? "text-[#0B1B4A] font-semibold"
+          : "text-[#0B1B4A]/70 hover:text-[#0B1B4A]"
+      )}
+    >
+      {label}
+      {active && (
+        <span className="absolute left-0 right-0 bottom-0 h-[2px] bg-[#0B1B4A]" />
+      )}
+    </button>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Case pill                                                          */
+/* ------------------------------------------------------------------ */
+function CasePill({
+  index,
+  active,
+  onClick,
+}: {
+  index: number;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={clsx(
+        "h-7 px-4 text-[12px] font-medium rounded-md border transition-colors",
+        active
+          ? "bg-[#A6F0D9] text-[#0B1B4A] border-[#26D9B5]"
+          : "bg-white text-[#0B1B4A]/85 border-gray-300 hover:bg-gray-50"
+      )}
+    >
+      Case {index + 1}
+    </button>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Verdict pill — used in the Result tab grid                        */
+/* ------------------------------------------------------------------ */
+type Verdict = "passed" | "failed" | "timeout" | "error";
+
+function ResultPill({ index, verdict }: { index: number; verdict: Verdict }) {
+  const styles: Record<Verdict, string> = {
+    passed: "bg-[#E8F8F1] text-[#0B1B4A] border-[#A6E3CA]",
+    failed: "bg-[#FBECEC] text-[#0B1B4A] border-[#F0BFBF]",
+    timeout: "bg-[#F2F2F2] text-[#0B1B4A] border-[#D5D5D5]",
+    error: "bg-[#FBECEC] text-[#0B1B4A] border-[#F0BFBF]",
+  };
+  return (
+    <span
+      className={clsx(
+        "inline-flex items-center justify-between gap-2 h-7 px-3 text-[12px] rounded-full border",
+        styles[verdict]
+      )}
+    >
+      <span>Case {index + 1}</span>
+      {verdict === "passed" && (
+        <svg viewBox="0 0 16 16" className="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="8" cy="8" r="6.5" />
+          <polyline points="5 8.5 7.2 11 11 5.5" />
+        </svg>
+      )}
+      {(verdict === "failed" || verdict === "error") && (
+        <svg viewBox="0 0 16 16" className="w-3.5 h-3.5 text-red-500" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="8" cy="8" r="6.5" />
+          <line x1="5.5" y1="5.5" x2="10.5" y2="10.5" />
+          <line x1="10.5" y1="5.5" x2="5.5" y2="10.5" />
+        </svg>
+      )}
+      {verdict === "timeout" && (
+        <svg viewBox="0 0 16 16" className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="8" cy="8" r="6.5" />
+          <polyline points="8 5 8 8 10 9.5" />
+        </svg>
+      )}
+    </span>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Error box                                                          */
+/* ------------------------------------------------------------------ */
+function ErrorBox({ text }: { text: string }) {
+  return (
+    <div className="rounded-md bg-[#FBECEC] border border-[#F0BFBF] p-3">
+      <div className="text-[13px] font-semibold text-[#B91C1C] mb-1">Error</div>
+      <pre className="text-[12px] font-mono text-[#7F1D1D] whitespace-pre-wrap break-words">
+{text}
+      </pre>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Result tab body                                                    */
+/* ------------------------------------------------------------------ */
 function ResultView({
+  isRunning,
   runResults,
   customResult,
-  submitMsg,
+  samples,
 }: {
+  isRunning: boolean;
   runResults: RunResult[];
   customResult: RunResult | undefined;
-  submitMsg: string | null;
+  samples: { input: string; output?: string }[];
 }) {
-  const hasRun = runResults.length > 0;
-  const nothingYet = !hasRun && !customResult && !submitMsg;
+  if (isRunning && runResults.length === 0 && !customResult) {
+    return (
+      <div className="h-full flex items-center justify-center text-[13px] text-[#0B1B4A]/70">
+        <span className="animate-pulse">· Fetching results...</span>
+      </div>
+    );
+  }
 
-  if (nothingYet) {
+  if (runResults.length === 0 && !customResult) {
     return (
       <div className="text-[12px] text-gray-500">
         Run your code to see results here.
@@ -232,219 +291,160 @@ function ResultView({
     );
   }
 
-  const total = runResults.length;
-  const passedCount = runResults.filter((r) => r.passed === true).length;
-  const erroredCount = runResults.filter((r) => !!r.error).length;
-  const allPassed = total > 0 && passedCount === total && erroredCount === 0;
+  const firstError = runResults.find((r) => r.error);
+
+  // If there are 4+ run results, show the pill grid (Submit-style).
+  // Otherwise, show the table view (Execute-style).
+  const usePillGrid = runResults.length > 3;
 
   return (
     <div className="space-y-3">
-      {/* Summary banner */}
-      {hasRun && (
-        <div
-          className={clsx(
-            "flex items-center gap-2 px-3 py-2 rounded border",
-            allPassed
-              ? "bg-green-50 text-green-800 border-green-200"
-              : erroredCount > 0
-              ? "bg-red-50 text-red-800 border-red-200"
-              : "bg-amber-50 text-amber-800 border-amber-200"
-          )}
-        >
-          <span
-            className={clsx(
-              "w-5 h-5 rounded-full flex items-center justify-center text-white text-[12px] font-bold",
-              allPassed
-                ? "bg-green-500"
-                : erroredCount > 0
-                ? "bg-red-500"
-                : "bg-amber-500"
-            )}
-          >
-            {allPassed ? "✓" : erroredCount > 0 ? "!" : "✗"}
-          </span>
-          <div className="text-[13px] font-semibold">
-            {allPassed
-              ? `All ${total} test case${total === 1 ? "" : "s"} passed`
-              : `${passedCount}/${total} test case${total === 1 ? "" : "s"} passed`}
-          </div>
-          <div className="ml-auto text-[11px] font-mono text-gray-500">
-            {runResults
-              .reduce((sum, r) => sum + r.timeMs, 0)
-              .toFixed(0)}{" "}
-            ms total
-          </div>
-        </div>
+      {firstError && firstError.error && (
+        <ErrorBox text={firstError.error} />
       )}
 
-      {/* Per-case verdict cards */}
-      {hasRun && (
-        <div className="space-y-2">
-          {runResults.map((r) => {
-            const isPass = r.passed === true && !r.error;
-            const isFail = r.passed === false && !r.error;
-            return (
-              <div
-                key={r.caseIndex}
-                className={clsx(
-                  "rounded border px-3 py-2 flex items-start gap-3",
-                  isPass
-                    ? "border-green-200 bg-green-50/60"
-                    : isFail
-                    ? "border-amber-200 bg-amber-50/60"
-                    : r.error
-                    ? "border-red-200 bg-red-50/60"
-                    : "border-panelBorder bg-gray-50"
-                )}
-              >
-                <span
-                  className={clsx(
-                    "mt-0.5 w-5 h-5 shrink-0 rounded-full flex items-center justify-center text-[11px] font-bold text-white",
-                    isPass
-                      ? "bg-green-500"
-                      : isFail
-                      ? "bg-amber-500"
-                      : r.error
-                      ? "bg-red-500"
-                      : "bg-gray-400"
-                  )}
-                >
-                  {isPass ? "✓" : isFail ? "✗" : r.error ? "!" : "–"}
-                </span>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-[12px] font-semibold text-gray-800">
-                      Test Case {r.caseIndex + 1}
-                    </span>
-                    <span
-                      className={clsx(
-                        "text-[11px] font-semibold uppercase tracking-wider",
-                        isPass
-                          ? "text-green-700"
-                          : isFail
-                          ? "text-amber-700"
-                          : r.error
-                          ? "text-red-700"
-                          : "text-gray-600"
-                      )}
-                    >
-                      {isPass
-                        ? "Passed"
-                        : isFail
-                        ? "Wrong Answer"
-                        : r.error
-                        ? "Runtime Error"
-                        : "Ran"}
-                    </span>
-                    <span className="text-[11px] text-gray-500 font-mono ml-auto">
-                      {r.timeMs.toFixed(0)} ms
-                    </span>
-                  </div>
+      {usePillGrid && !firstError && (
+        <>
+          <div className="grid grid-cols-8 gap-2">
+            {runResults.map((r) => {
+              const v: Verdict = r.error
+                ? "error"
+                : r.passed === true
+                ? "passed"
+                : r.passed === false
+                ? "failed"
+                : "timeout";
+              return <ResultPill key={r.caseIndex} index={r.caseIndex} verdict={v} />;
+            })}
+          </div>
 
-                  {r.error ? (
-                    <pre className="mt-1 font-mono text-[12px] text-red-700 whitespace-pre-wrap break-all">
-                      {r.error}
-                    </pre>
-                  ) : (
-                    <div className="grid grid-cols-2 gap-2 mt-1 text-[12px]">
-                      <div>
-                        <div className="text-gray-500 text-[11px]">
-                          Expected
-                        </div>
-                        <pre className="font-mono whitespace-pre-wrap break-all text-gray-900">
-                          {r.expected ?? "—"}
-                        </pre>
-                      </div>
-                      <div>
-                        <div className="text-gray-500 text-[11px]">
-                          Your Output
-                        </div>
-                        <pre className="font-mono whitespace-pre-wrap break-all text-gray-900">
-                          {r.actual || "(empty)"}
-                        </pre>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+          {/* Legend */}
+          <div className="flex items-center justify-end gap-4 pt-2 text-[11px] text-[#0B1B4A]/80">
+            <Legend dotClass="text-emerald-500" label="Passed" />
+            <Legend dotClass="text-red-500" label="Failed" cross />
+            <Legend dotClass="text-gray-500" label="Timed Out" clock />
+            <Legend dotClass="text-red-500" label="Error" cross />
+          </div>
+        </>
       )}
 
-      {/* Custom Input stdout — rendered below the sample verdicts so a
-          user who ran both gets the full picture in one scroll. */}
+      {!usePillGrid && !firstError && runResults.length > 0 && (
+        <ResultTable rows={runResults} samples={samples} />
+      )}
+
       {customResult && (
-        <div className="rounded border border-panelBorder bg-gray-50 px-3 py-2">
-          <div className="text-[11px] font-semibold text-gray-600 uppercase tracking-wider mb-1">
-            Custom Input
-            <span className="ml-2 text-[11px] font-mono text-gray-500 normal-case">
-              {customResult.timeMs.toFixed(0)} ms
-            </span>
-          </div>
-          {customResult.error ? (
-            <pre className="font-mono text-[12px] text-red-700 whitespace-pre-wrap break-all">
-              {customResult.error}
-            </pre>
-          ) : (
-            <pre className="font-mono text-[12px] text-gray-900 whitespace-pre-wrap break-all">
-              {customResult.actual || "(no output)"}
-            </pre>
-          )}
-        </div>
-      )}
-
-      {/* Submit message */}
-      {submitMsg && (
-        <div
-          className={clsx(
-            "text-[12px] rounded px-3 py-2 border",
-            submitMsg.startsWith("Submitted successfully")
-              ? "text-green-700 bg-green-50 border-green-200"
-              : "text-amber-700 bg-amber-50 border-amber-200"
-          )}
-        >
-          {submitMsg}
-        </div>
+        <ResultTable
+          rows={[
+            {
+              caseIndex: 0,
+              passed: customResult.passed,
+              actual: customResult.actual,
+              expected: undefined,
+              error: customResult.error,
+              timeMs: customResult.timeMs,
+            },
+          ]}
+          samples={[{ input: "(custom input)" }]}
+          customLabel
+        />
       )}
     </div>
   );
 }
 
-/** Top-level tab button. Active state uses the Infosys teal underline. */
-function TopTab({
+function Legend({
+  dotClass,
   label,
-  active,
-  onClick,
-  badge,
+  cross,
+  clock,
 }: {
+  dotClass: string;
   label: string;
-  active: boolean;
-  onClick: () => void;
-  badge?: string;
+  cross?: boolean;
+  clock?: boolean;
 }) {
   return (
-    <button
-      onClick={onClick}
-      className={clsx(
-        "relative h-9 px-5 text-[13px] font-medium transition-colors",
-        active
-          ? "text-infy-700"
-          : "text-gray-600 hover:text-gray-800"
+    <span className="inline-flex items-center gap-1">
+      {cross ? (
+        <svg viewBox="0 0 16 16" className={"w-3.5 h-3.5 " + dotClass} fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="8" cy="8" r="6.5" />
+          <line x1="5.5" y1="5.5" x2="10.5" y2="10.5" />
+          <line x1="10.5" y1="5.5" x2="5.5" y2="10.5" />
+        </svg>
+      ) : clock ? (
+        <svg viewBox="0 0 16 16" className={"w-3.5 h-3.5 " + dotClass} fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="8" cy="8" r="6.5" />
+          <polyline points="8 5 8 8 10 9.5" />
+        </svg>
+      ) : (
+        <svg viewBox="0 0 16 16" className={"w-3.5 h-3.5 " + dotClass} fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="8" cy="8" r="6.5" />
+          <polyline points="5 8.5 7.2 11 11 5.5" />
+        </svg>
       )}
-    >
       <span>{label}</span>
-      {badge && (
-        <span className="ml-2 text-[10px] font-bold text-infy-700 bg-infy-50 border border-infy-200 rounded px-1.5 py-px align-middle">
-          {badge}
-        </span>
-      )}
-      <span
-        className={clsx(
-          "absolute left-2 right-2 bottom-0 h-[2px] transition-colors",
-          active ? "bg-infy-500" : "bg-transparent"
-        )}
-      />
-    </button>
+    </span>
+  );
+}
+
+function ResultTable({
+  rows,
+  samples,
+  customLabel,
+}: {
+  rows: RunResult[];
+  samples: { input: string; output?: string }[];
+  customLabel?: boolean;
+}) {
+  return (
+    <div>
+      <div className="grid grid-cols-[2fr_1fr_1fr_60px] gap-3 px-1 pb-2 text-[12px] font-medium text-[#0B1B4A]/80 border-b border-gray-200">
+        <span>Input</span>
+        <span>Expected output</span>
+        <span>Output</span>
+        <span>Status</span>
+      </div>
+      {rows.map((r) => {
+        const sample = samples[r.caseIndex] ?? samples[0];
+        return (
+          <div
+            key={r.caseIndex}
+            className="grid grid-cols-[2fr_1fr_1fr_60px] gap-3 px-1 py-3 border-b border-gray-100 text-[12px] text-[#0B1B4A]"
+          >
+            <pre className="font-mono whitespace-pre-wrap break-words">
+{customLabel ? sample.input : (sample?.input ?? "")}
+            </pre>
+            <pre className="font-mono whitespace-pre-wrap break-words">
+{r.expected ?? sample?.output ?? ""}
+            </pre>
+            <pre className="font-mono whitespace-pre-wrap break-words">
+{r.error ? "" : r.actual}
+            </pre>
+            <span className="flex items-start pt-0.5">
+              {r.error ? (
+                <svg viewBox="0 0 16 16" className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="8" cy="8" r="6.5" />
+                  <line x1="5.5" y1="5.5" x2="10.5" y2="10.5" />
+                  <line x1="10.5" y1="5.5" x2="5.5" y2="10.5" />
+                </svg>
+              ) : r.passed === true ? (
+                <svg viewBox="0 0 16 16" className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="8" cy="8" r="6.5" />
+                  <polyline points="5 8.5 7.2 11 11 5.5" />
+                </svg>
+              ) : r.passed === false ? (
+                <svg viewBox="0 0 16 16" className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="8" cy="8" r="6.5" />
+                  <line x1="5.5" y1="5.5" x2="10.5" y2="10.5" />
+                  <line x1="10.5" y1="5.5" x2="5.5" y2="10.5" />
+                </svg>
+              ) : (
+                <span className="text-gray-400">-</span>
+              )}
+            </span>
+          </div>
+        );
+      })}
+    </div>
   );
 }

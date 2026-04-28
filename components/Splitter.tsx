@@ -73,27 +73,27 @@ export function Splitter({ orientation, onDrag, title }: Props) {
       title={title}
       aria-orientation={orientation === "vertical" ? "vertical" : "horizontal"}
       onPointerDown={onPointerDown}
+      style={{ background: "#06091F" }}
       className={clsx(
         "relative group z-10 select-none",
         orientation === "vertical"
-          ? "w-[6px] cursor-col-resize bg-panelBorder hover:bg-infy-400/70"
-          : "h-[6px] cursor-row-resize bg-panelBorder hover:bg-infy-400/70",
+          ? "w-[4px] cursor-col-resize hover:bg-infy-400/70"
+          : "h-[10px] cursor-row-resize hover:bg-infy-400/70",
         "transition-colors"
       )}
     >
-      {/* Grabber dots — visual hint in the middle of the splitter. */}
-      <div
+      {/* Grabber line — a single small rounded pill in the middle
+          of the splitter (not three dots). Vertical splitter shows a
+          short vertical pill; horizontal shows a short horizontal pill. */}
+      <span
         className={clsx(
-          "absolute flex gap-0.5 opacity-60 group-hover:opacity-100",
+          "absolute opacity-70 group-hover:opacity-100 rounded-full bg-white/55",
           orientation === "vertical"
-            ? "left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 flex-col"
-            : "top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 flex-row"
+            ? "left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-[2px] h-5"
+            : "top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 h-[2px] w-5"
         )}
-      >
-        <span className="w-[2px] h-[2px] bg-gray-500 rounded-full" />
-        <span className="w-[2px] h-[2px] bg-gray-500 rounded-full" />
-        <span className="w-[2px] h-[2px] bg-gray-500 rounded-full" />
-      </div>
+        aria-hidden
+      />
     </div>
   );
 }

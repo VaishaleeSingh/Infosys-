@@ -1,13 +1,17 @@
 "use client";
 
 /**
- * Thin strip above the Monaco editor — exactly matches the
- * "Python 3 ▾" dropdown visible at the top-left of the code
- * editor in the screenshots.
+ * Thin toolbar strip above the Monaco editor — matches the reference:
  *
- * Also includes a reset-code button on the right so candidates can
- * revert to the starter template (matches the "⟳" icon sometimes
- * visible next to the language selector in the originals).
+ *   ┌─────────────────────────────────────────────────────────────┐
+ *   │  [ C++ ▾ ]  [ + ]                       A-  A+  ⟳  ☾        │
+ *   └─────────────────────────────────────────────────────────────┘
+ *
+ *   - Left: language dropdown (C++/Python 3/Java/JavaScript) and a
+ *     small "+" icon button (decorative for now — matches the real
+ *     Infosys UI which lets the candidate add a new file).
+ *   - Right: font-decrease (A-), font-increase (A+), reset code
+ *     (refresh icon), and a moon icon (dark/light mode toggle).
  */
 
 import { useState, useRef, useEffect } from "react";
@@ -49,77 +53,132 @@ export function EditorToolbar() {
   };
 
   return (
-    <div className="h-9 bg-gray-50 border-b border-panelBorder flex items-center justify-between px-2">
-      {/* Language selector */}
-      <div className="relative" ref={ref}>
-        <button
-          onClick={() => setOpen((v) => !v)}
-          className={clsx(
-            "h-6 px-2 pr-1 flex items-center gap-1 text-[12px] rounded bg-white text-gray-700",
-            "border border-panelBorder hover:bg-gray-100"
-          )}
-          aria-haspopup="menu"
-          aria-expanded={open}
-        >
-          {LANGUAGE_LABELS[language]}
-          <span className="text-gray-500 text-[10px] pl-0.5">▾</span>
-        </button>
-
-        {open && (
-          <div
-            role="menu"
-            className="absolute left-0 mt-1 w-40 bg-white border border-panelBorder rounded shadow-lg z-30 py-1"
+    <div className="h-10 bg-white border-b border-panelBorder flex items-center justify-between px-3">
+      {/* LEFT: language dropdown + add file (+) */}
+      <div className="flex items-center gap-2">
+        <div className="relative" ref={ref}>
+          <button
+            onClick={() => setOpen((v) => !v)}
+            className="h-7 w-[110px] pl-3 pr-2 inline-flex items-center justify-between text-[12px] rounded-md bg-white text-[#0B1B4A] border border-gray-300 hover:bg-gray-50"
+            aria-haspopup="menu"
+            aria-expanded={open}
           >
-            {(Object.keys(LANGUAGE_LABELS) as Language[]).map((l) => (
-              <button
-                key={l}
-                role="menuitemradio"
-                aria-checked={language === l}
-                onClick={() => {
-                  setLanguage(l);
-                  setOpen(false);
-                }}
-                className={clsx(
-                  "w-full text-left text-[12px] px-3 py-1.5 text-gray-700 hover:bg-infy-50",
-                  language === l && "bg-infy-50 text-infy-800 font-medium"
-                )}
-              >
-                {LANGUAGE_LABELS[l]}
-                {language === l && (
-                  <span className="float-right text-infy-600">✓</span>
-                )}
-              </button>
-            ))}
-            <div className="mt-1 border-t border-panelBorder px-3 py-1.5 text-[10px] text-gray-500">
-              Each language has its own starter. In-browser execution is
-              Python 3 via Pyodide.
+            <span>{LANGUAGE_LABELS[language]}</span>
+            <svg
+              viewBox="0 0 16 16"
+              className="w-3 h-3 text-[#0B1B4A]"
+              fill="currentColor"
+              aria-hidden
+            >
+              <polygon points="4 6 12 6 8 11" />
+            </svg>
+          </button>
+
+          {open && (
+            <div
+              role="menu"
+              className="absolute left-0 mt-1 w-40 bg-white border border-panelBorder rounded-md shadow-lg z-30 py-1"
+            >
+              {(Object.keys(LANGUAGE_LABELS) as Language[]).map((l) => (
+                <button
+                  key={l}
+                  role="menuitemradio"
+                  aria-checked={language === l}
+                  onClick={() => {
+                    setLanguage(l);
+                    setOpen(false);
+                  }}
+                  className={clsx(
+                    "w-full text-left text-[12px] px-3 py-1.5 text-[#0B1B4A] hover:bg-gray-50",
+                    language === l && "bg-gray-50 font-semibold"
+                  )}
+                >
+                  {LANGUAGE_LABELS[l]}
+                </button>
+              ))}
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
 
-      {/* Right-hand controls */}
-      <div className="flex items-center gap-1">
         <button
-          onClick={resetCode}
-          title="Reset to starter code"
-          className="h-6 w-6 flex items-center justify-center rounded text-gray-600 hover:bg-gray-200"
+          aria-label="AI assistant"
+          title="AI assistant"
+          className="h-7 w-7 inline-flex items-center justify-center rounded-md bg-[#0B1B4A] text-white hover:bg-[#15235E] transition-colors"
         >
+          {/* AI assistant — chat bubble with sparkle (compact). */}
           <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+            viewBox="0 0 16 16"
+            className="w-4 h-4"
+            fill="currentColor"
+            aria-hidden
           >
-            <polyline points="1 4 1 10 7 10" />
-            <path d="M3.51 15A9 9 0 1 0 6 5.3L1 10" />
+            <path d="M3 2.5 h10 a1.5 1.5 0 0 1 1.5 1.5 v6 a1.5 1.5 0 0 1 -1.5 1.5 h-3 l-2 2 v-2 h-5 a1.5 1.5 0 0 1 -1.5 -1.5 v-6 a1.5 1.5 0 0 1 1.5 -1.5 z" />
+            <path d="M8 4.2 L8.7 6.3 L10.8 7 L8.7 7.7 L8 9.8 L7.3 7.7 L5.2 7 L7.3 6.3 Z" fill="white" />
           </svg>
         </button>
       </div>
+
+      {/* RIGHT: A- / A+ / reset / dark-mode */}
+      <div className="flex items-center gap-1">
+        <IconBtn label="Decrease font size" onClick={() => {}}>
+          <span className="font-semibold text-[13px]">A<span className="text-[10px]">-</span></span>
+        </IconBtn>
+        <IconBtn label="Increase font size" onClick={() => {}}>
+          <span className="font-semibold text-[13px]">A<span className="text-[10px]">+</span></span>
+        </IconBtn>
+        <IconBtn label="Reset to starter code" onClick={resetCode}>
+          <svg
+            viewBox="0 0 16 16"
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.8}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+          >
+            <polyline points="13 4 13 7 10 7" />
+            <path d="M3.5 9a5 5 0 0 0 9.4 1.5" />
+            <polyline points="3 12 3 9 6 9" />
+            <path d="M12.5 7A5 5 0 0 0 3.1 5.5" />
+          </svg>
+        </IconBtn>
+        <IconBtn label="Toggle dark mode" onClick={() => {}}>
+          <svg
+            viewBox="0 0 16 16"
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.6}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+          >
+            <path d="M13 9.5A5.5 5.5 0 0 1 6.5 3 5.5 5.5 0 1 0 13 9.5z" />
+          </svg>
+        </IconBtn>
+      </div>
     </div>
+  );
+}
+
+function IconBtn({
+  children,
+  label,
+  onClick,
+}: {
+  children: React.ReactNode;
+  label: string;
+  onClick?: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      aria-label={label}
+      title={label}
+      className="h-7 w-7 inline-flex items-center justify-center rounded text-[#0B1B4A]/80 hover:text-[#0B1B4A] hover:bg-gray-100 transition-colors"
+    >
+      {children}
+    </button>
   );
 }

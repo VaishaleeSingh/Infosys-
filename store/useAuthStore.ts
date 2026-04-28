@@ -61,7 +61,13 @@ const memoryStorage = (() => {
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
-      user: null,
+      // Static user — login page is bypassed in this build.
+      user: {
+        email: "aditya@infosys.com",
+        name: "Aditya Singh",
+        candidateId: "adityasingh3210",
+        loggedInAt: Date.now(),
+      },
       termsAccepted: false,
       login: (email) => {
         const trimmed = email.trim();
@@ -88,6 +94,9 @@ export const useAuthStore = create<AuthState>()(
           ? window.sessionStorage
           : memoryStorage
       ),
+      // Do NOT persist `termsAccepted`. Every fresh app start should
+      // begin at /terms and walk through every gated step again.
+      partialize: (state) => ({ user: state.user }),
     }
   )
 );
