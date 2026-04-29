@@ -6,6 +6,7 @@ out
 .env.local
 .env*.local
 .claude/
+tsconfig.tsbuildinfo
 
 # Yarn 4 (PnP, non-zero-install)
 .pnp.*

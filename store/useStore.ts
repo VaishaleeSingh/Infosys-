@@ -69,6 +69,11 @@ type Store = {
   sidebarOpen: boolean;
   /** Whether the camera/recording pill in the header is visible. */
   cameraVisible: boolean;
+  /** Drawer chat panel — toggled with Ctrl/Cmd + Alt + Shift + M.
+   *  Persisted in the store so the shortcut works whether the sidebar
+   *  is open or closed; the chat reappears with the same on/off state
+   *  the next time the drawer opens. */
+  chatVisible: boolean;
   isRunning: boolean;
   submitMessage: string | null;
 
@@ -96,6 +101,8 @@ type Store = {
   toggleSidebar: () => void;
   setSidebarOpen: (open: boolean) => void;
   toggleCamera: () => void;
+  toggleChat: () => void;
+  setChatVisible: (open: boolean) => void;
   setConsoleOpen: (open: boolean) => void;
   setSubmitMessage: (msg: string | null) => void;
   triggerAutoSolve: (id: string, lang: Language) => void;
@@ -136,6 +143,7 @@ export const useStore = create<Store>((set, get) => ({
   consoleOpen: false,
   sidebarOpen: false,
   cameraVisible: true,
+  chatVisible: false,
   isRunning: false,
   submitMessage: null,
   editStartedAt: {},
@@ -204,6 +212,8 @@ export const useStore = create<Store>((set, get) => ({
   toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
   setSidebarOpen: (open) => set({ sidebarOpen: open }),
   toggleCamera: () => set((s) => ({ cameraVisible: !s.cameraVisible })),
+  toggleChat: () => set((s) => ({ chatVisible: !s.chatVisible })),
+  setChatVisible: (open) => set({ chatVisible: open }),
   setSubmitMessage: (msg) => set({ submitMessage: msg }),
 
   ensureEditStart: (id, lang) => {

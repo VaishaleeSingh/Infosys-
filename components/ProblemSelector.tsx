@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Left dashboard sidebar — collapsible "Questions" panel.
+ * Left dashboard sidebar — collapsible "Questions" panel + drawer chat.
  *
  * Two states:
  *   - Closed (default): a thin 40px white rail on the left with a
@@ -15,10 +15,27 @@
  * label above a bordered card whose header reads "Coding Hands-on"
  * with passed/unsolved counters; underneath, the questions list with
  * a code-brackets icon per row, the active row underlined and bolded.
+ *
+ * Drawer chat (bottom of the open panel): a Supabase-backed shared
+ * messages stream. Hidden by default; toggled with
+ *   Windows/Linux:  Ctrl + Alt + Shift + M
+ *   macOS:          Cmd  + Option + Shift + M
+ * That 4-key chord was picked because it has no conflicts on Chrome,
+ * Firefox, Safari, or Edge across Windows/Mac/Linux. Visibility lives
+ * in the store so the shortcut works whether the drawer is open or
+ * closed; the chat reappears in whichever state the user left it.
  */
 
+import { useEffect, useRef, useState } from "react";
 import { useStore } from "@/store/useStore";
 import { problems } from "@/lib/problems";
+import {
+  fetchLatestMessage,
+  postMessage,
+  subscribeToMessages,
+  supabaseConfigured,
+  type ChatMessage,
+} from "@/lib/supabase";
 import clsx from "clsx";
 
 function CodeBracketsIcon({ className = "" }: { className?: string }) {
@@ -79,6 +96,8 @@ export function ProblemSelector() {
   const toggle = useStore((s) => s.toggleSidebar);
   const setOpen = useStore((s) => s.setSidebarOpen);
   const toggleCamera = useStore((s) => s.toggleCamera);
+  const chatVisible = useStore((s) => s.chatVisible);
+  const toggleChat = useStore((s) => s.toggleChat);
 
   const selectedId = useStore((s) => s.selectedProblemId);
   const selectProblem = useStore((s) => s.selectProblem);
@@ -86,6 +105,26 @@ export function ProblemSelector() {
   const total = problems.length;
   const done = Object.keys(completed).length;
   const pending = total - done;
+
+  // Global keyboard shortcut: Ctrl/Cmd + Alt + Shift + M toggles the
+  // chat panel. We check `e.code === "KeyM"` (physical key, layout-
+  // independent) instead of `e.key` because Alt+M on some keyboard
+  // layouts produces a different character (e.g. `µ` on macOS US).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (
+        (e.ctrlKey || e.metaKey) &&
+        e.altKey &&
+        e.shiftKey &&
+        e.code === "KeyM"
+      ) {
+        e.preventDefault();
+        toggleChat();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [toggleChat]);
 
   return (
     <>
@@ -141,7 +180,7 @@ export function ProblemSelector() {
           very top of the viewport, including over the header. */}
       {open && (
         <div className="fixed top-0 left-0 bottom-0 w-[280px] bg-white border-r border-panelBorder z-50 flex flex-col shadow-xl">
-          <div className="flex items-center justify-between px-4 pt-4 pb-2">
+          <div className="flex items-center justify-between px-4 pt-4 pb-2 shrink-0">
             <span className="text-[13px] font-semibold text-[#0B1B4A]">
               Questions
             </span>
@@ -154,112 +193,210 @@ export function ProblemSelector() {
             </button>
           </div>
 
-          <div className="mx-3 mb-3 rounded-md border border-gray-200 shadow-sm">
-            <div className="flex items-center px-3 py-2.5 border-b border-gray-100">
-              <HamburgerIcon className="w-4 h-4 text-[#0B1B4A] mr-2" />
-              <span className="flex-1 text-[13px] font-semibold text-[#0B1B4A] underline underline-offset-2">
-                Coding Hands-on
-              </span>
-              <span
-                className="inline-flex items-center gap-1 text-[12px] text-emerald-600 mr-2"
-                title={done + " solved"}
-              >
-                <svg
-                  viewBox="0 0 16 16"
-                  className="w-3.5 h-3.5"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden
+          {/* Questions card — grows to fill available height; the chat
+              (when visible) is pinned to the bottom by the parent flex
+              column. */}
+          <div className="flex-1 min-h-0 overflow-y-auto thin-scroll px-3 pb-3">
+            <div className="rounded-md border border-gray-200 shadow-sm">
+              <div className="flex items-center px-3 py-2.5 border-b border-gray-100">
+                <HamburgerIcon className="w-4 h-4 text-[#0B1B4A] mr-2" />
+                <span className="flex-1 text-[13px] font-semibold text-[#0B1B4A] underline underline-offset-2">
+                  Coding Hands-on
+                </span>
+                <span
+                  className="inline-flex items-center gap-1 text-[12px] text-emerald-600 mr-2"
+                  title={done + " solved"}
                 >
-                  <polyline points="3 8.5 7 12.5 13 4.5" />
-                </svg>
-                {done}
-              </span>
-              <span
-                className="inline-flex items-center gap-1 text-[12px] text-gray-500"
-                title={pending + " unsolved"}
-              >
-                <svg
-                  viewBox="0 0 16 16"
-                  className="w-3.5 h-3.5"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={1.8}
-                  aria-hidden
+                  <svg
+                    viewBox="0 0 16 16"
+                    className="w-3.5 h-3.5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden
+                  >
+                    <polyline points="3 8.5 7 12.5 13 4.5" />
+                  </svg>
+                  {done}
+                </span>
+                <span
+                  className="inline-flex items-center gap-1 text-[12px] text-gray-500"
+                  title={pending + " unsolved"}
                 >
-                  <circle cx="8" cy="8" r="5.5" />
-                  <line x1="8" y1="4.5" x2="8" y2="11.5" />
-                </svg>
-                {pending}
-              </span>
-            </div>
+                  <svg
+                    viewBox="0 0 16 16"
+                    className="w-3.5 h-3.5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={1.8}
+                    aria-hidden
+                  >
+                    <circle cx="8" cy="8" r="5.5" />
+                    <line x1="8" y1="4.5" x2="8" y2="11.5" />
+                  </svg>
+                  {pending}
+                </span>
+              </div>
 
-            <ul className="py-1 max-h-[60vh] overflow-y-auto thin-scroll">
-              {problems.map((p) => {
-                const isActive = p.id === selectedId;
-                const isDone = !!completed[p.id];
-                return (
-                  <li key={p.id}>
-                    <button
-                      onClick={() => {
-                        selectProblem(p.id);
-                        setOpen(false);
-                      }}
-                      title={
-                        p.number +
-                        ". " +
-                        p.title +
-                        " (" +
-                        p.difficulty +
-                        ")" +
-                        (isDone ? " - Completed" : "")
-                      }
-                      className={clsx(
-                        "w-full flex items-center gap-2.5 px-3 py-2 text-[13px] text-left transition-colors hover:bg-gray-50",
-                        isActive ? "text-[#0B1B4A]" : "text-[#0B1B4A]/85"
-                      )}
-                    >
-                      <CodeBracketsIcon
+              <ul className="py-1">
+                {problems.map((p) => {
+                  const isActive = p.id === selectedId;
+                  const isDone = !!completed[p.id];
+                  return (
+                    <li key={p.id}>
+                      <button
+                        onClick={() => {
+                          selectProblem(p.id);
+                          setOpen(false);
+                        }}
+                        title={
+                          p.number +
+                          ". " +
+                          p.title +
+                          " (" +
+                          p.difficulty +
+                          ")" +
+                          (isDone ? " - Completed" : "")
+                        }
                         className={clsx(
-                          "w-3.5 h-3.5 shrink-0",
-                          isActive ? "text-[#0B1B4A]" : "text-[#0B1B4A]/60"
-                        )}
-                      />
-                      <span
-                        className={clsx(
-                          "flex-1",
-                          isActive
-                            ? "font-semibold underline underline-offset-2"
-                            : ""
+                          "w-full flex items-center gap-2.5 px-3 py-2 text-[13px] text-left transition-colors hover:bg-gray-50",
+                          isActive ? "text-[#0B1B4A]" : "text-[#0B1B4A]/85"
                         )}
                       >
-                        {p.number}. Question {p.number}
-                      </span>
-                      {isDone && (
-                        <svg
-                          viewBox="0 0 16 16"
-                          className="w-3.5 h-3.5 text-emerald-500 shrink-0"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth={2.2}
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          aria-label="Completed"
+                        <CodeBracketsIcon
+                          className={clsx(
+                            "w-3.5 h-3.5 shrink-0",
+                            isActive ? "text-[#0B1B4A]" : "text-[#0B1B4A]/60"
+                          )}
+                        />
+                        <span
+                          className={clsx(
+                            "flex-1",
+                            isActive
+                              ? "font-semibold underline underline-offset-2"
+                              : ""
+                          )}
                         >
-                          <polyline points="3 8.5 7 12.5 13 4.5" />
-                        </svg>
-                      )}
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
+                          {p.number}. Question {p.number}
+                        </span>
+                        {isDone && (
+                          <svg
+                            viewBox="0 0 16 16"
+                            className="w-3.5 h-3.5 text-emerald-500 shrink-0"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth={2.2}
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-label="Completed"
+                          >
+                            <polyline points="3 8.5 7 12.5 13 4.5" />
+                          </svg>
+                        )}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
           </div>
+
+          {/* Drawer chat — pinned to the bottom of the drawer. Hidden by
+              default; press Ctrl/Cmd + Alt + Shift + M to reveal or hide. */}
+          {chatVisible && <DrawerChat enabled={open} />}
         </div>
       )}
     </>
+  );
+}
+
+/**
+ * Bottom-of-drawer chat: shows the most recent message from the shared
+ * `messages` table and lets the user post a new one with Enter.
+ *
+ * Real-time updates use Supabase's postgres_changes channel. We only
+ * subscribe while the drawer is open to avoid an idle websocket.
+ */
+function DrawerChat({ enabled }: { enabled: boolean }) {
+  const [latest, setLatest] = useState<ChatMessage | null>(null);
+  const [draft, setDraft] = useState("");
+  const [sending, setSending] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!enabled || !supabaseConfigured) return;
+    let cancelled = false;
+    fetchLatestMessage().then((m) => {
+      if (!cancelled) setLatest(m);
+    });
+    const channel = subscribeToMessages((msg) => {
+      // Always keep the highest id as "latest".
+      setLatest((prev) => (!prev || msg.id > prev.id ? msg : prev));
+    });
+    return () => {
+      cancelled = true;
+      channel?.unsubscribe();
+    };
+  }, [enabled]);
+
+  const send = async () => {
+    const body = draft.trim();
+    if (!body || sending) return;
+    setSending(true);
+    const msg = await postMessage(body);
+    setSending(false);
+    if (msg) {
+      setDraft("");
+      setLatest(msg);
+      inputRef.current?.focus();
+    }
+  };
+
+  if (!supabaseConfigured) {
+    return (
+      <div className="shrink-0 border-t border-panelBorder p-3 text-[11px] text-gray-500 leading-snug">
+        Chat disabled — set{" "}
+        <code className="font-mono text-[10px] bg-gray-100 px-1 rounded">
+          NEXT_PUBLIC_SUPABASE_URL
+        </code>{" "}
+        and{" "}
+        <code className="font-mono text-[10px] bg-gray-100 px-1 rounded">
+          NEXT_PUBLIC_SUPABASE_ANON_KEY
+        </code>{" "}
+        in <code className="font-mono text-[10px]">.env.local</code> to enable.
+      </div>
+    );
+  }
+
+  return (
+    <div className="shrink-0 border-t border-panelBorder p-3 flex flex-col gap-2 bg-gray-50/50">
+      <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
+        Latest message
+      </div>
+      <div className="text-[12px] text-gray-800 bg-white border border-panelBorder rounded px-2 py-1.5 min-h-[34px] break-words whitespace-pre-wrap">
+        {latest ? (
+          latest.body
+        ) : (
+          <span className="text-gray-400 italic">No messages yet</span>
+        )}
+      </div>
+      <input
+        ref={inputRef}
+        type="text"
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && !e.nativeEvent.isComposing) {
+            e.preventDefault();
+            send();
+          }
+        }}
+        placeholder={sending ? "Sending…" : "Type and press Enter…"}
+        disabled={sending}
+        className="text-[12px] border border-panelBorder rounded px-2 py-1.5 outline-none focus:border-[#0B1B4A] focus:ring-1 focus:ring-[#0B1B4A]/40 bg-white disabled:opacity-60"
+      />
+    </div>
   );
 }
