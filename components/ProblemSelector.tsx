@@ -133,14 +133,14 @@ export function ProblemSelector() {
           Questions dashboard; the document icon is decorative for now. */}
       <aside
         className="w-10 shrink-0 border border-panelBorder rounded-md shadow-panel flex flex-col items-center justify-end py-3 gap-2 m-1"
-        style={{ backgroundColor: "#FFFFFF" }}
+        style={{ backgroundColor: "#F2F5EE" }}
       >
         <button
           type="button"
           onClick={toggle}
           aria-label={open ? "Close questions" : "Open questions"}
           title={open ? "Close questions" : "Open questions"}
-          className="w-7 h-7 rounded flex items-center justify-center text-[#0B1B4A]/85 hover:text-[#0B1B4A] hover:bg-gray-100 transition-colors"
+          className="w-7 h-7 rounded flex items-center justify-center text-[#2c2d65]/85 hover:text-[#2c2d65] hover:bg-gray-100 transition-colors"
         >
           <HamburgerIcon className="w-4 h-4" />
         </button>
@@ -149,7 +149,7 @@ export function ProblemSelector() {
           onClick={toggleCamera}
           aria-label="Toggle camera"
           title="Toggle camera"
-          className="w-7 h-7 rounded flex items-center justify-center text-[#0B1B4A]/85 hover:text-[#0B1B4A] hover:bg-gray-100 transition-colors"
+          className="w-7 h-7 rounded flex items-center justify-center text-[#2c2d65]/85 hover:text-[#2c2d65] hover:bg-gray-100 transition-colors"
         >
           <svg
             viewBox="0 0 16 16"
@@ -179,15 +179,15 @@ export function ProblemSelector() {
       {/* Slide-in dashboard panel — covers the full left side from the
           very top of the viewport, including over the header. */}
       {open && (
-        <div className="fixed top-0 left-0 bottom-0 w-[280px] bg-white border-r border-panelBorder z-50 flex flex-col shadow-xl">
+        <div className="fixed top-0 left-0 bottom-0 w-[280px] bg-[#F2F5EE] border-r border-panelBorder z-50 flex flex-col shadow-xl">
           <div className="flex items-center justify-between px-4 pt-4 pb-2 shrink-0">
-            <span className="text-[13px] font-semibold text-[#0B1B4A]">
+            <span className="text-[13px] font-semibold text-[#2c2d65]">
               Questions
             </span>
             <button
               onClick={() => setOpen(false)}
               aria-label="Close"
-              className="text-[#0B1B4A]/70 hover:text-[#0B1B4A]"
+              className="text-[#2c2d65]/70 hover:text-[#2c2d65]"
             >
               <CloseIcon className="w-4 h-4" />
             </button>
@@ -199,8 +199,8 @@ export function ProblemSelector() {
           <div className="flex-1 min-h-0 overflow-y-auto thin-scroll px-3 pb-3">
             <div className="rounded-md border border-gray-200 shadow-sm">
               <div className="flex items-center px-3 py-2.5 border-b border-gray-100">
-                <HamburgerIcon className="w-4 h-4 text-[#0B1B4A] mr-2" />
-                <span className="flex-1 text-[13px] font-semibold text-[#0B1B4A] underline underline-offset-2">
+                <HamburgerIcon className="w-4 h-4 text-[#2c2d65] mr-2" />
+                <span className="flex-1 text-[13px] font-semibold text-[#2c2d65] underline underline-offset-2">
                   Coding Hands-on
                 </span>
                 <span
@@ -262,13 +262,13 @@ export function ProblemSelector() {
                         }
                         className={clsx(
                           "w-full flex items-center gap-2.5 px-3 py-2 text-[13px] text-left transition-colors hover:bg-gray-50",
-                          isActive ? "text-[#0B1B4A]" : "text-[#0B1B4A]/85"
+                          isActive ? "text-[#2c2d65]" : "text-[#2c2d65]/85"
                         )}
                       >
                         <CodeBracketsIcon
                           className={clsx(
                             "w-3.5 h-3.5 shrink-0",
-                            isActive ? "text-[#0B1B4A]" : "text-[#0B1B4A]/60"
+                            isActive ? "text-[#2c2d65]" : "text-[#2c2d65]/60"
                           )}
                         />
                         <span
@@ -395,7 +395,7 @@ function DrawerChat({ enabled }: { enabled: boolean }) {
         }}
         placeholder={sending ? "Sending…" : "Type and press Enter…"}
         disabled={sending}
-        className="text-[12px] border border-panelBorder rounded px-2 py-1.5 outline-none focus:border-[#0B1B4A] focus:ring-1 focus:ring-[#0B1B4A]/40 bg-white disabled:opacity-60"
+        className="text-[12px] border border-panelBorder rounded px-2 py-1.5 outline-none focus:border-[#2c2d65] focus:ring-1 focus:ring-[#2c2d65]/40 bg-white disabled:opacity-60"
       />
     </div>
   );

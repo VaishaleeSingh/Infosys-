@@ -110,12 +110,12 @@ function EventCard({
       </div>
 
       {/* Info section */}
-      <div className="px-3 py-3 space-y-2 text-[#0B1B4A]">
+      <div className="px-3 py-3 space-y-2 text-[#2c2d65]">
         <div className="flex items-center justify-between">
-          <span className="inline-flex items-center px-2.5 py-[3px] rounded-full border border-[#0B1B4A]/30 text-[10.5px] font-medium">
+          <span className="inline-flex items-center px-2.5 py-[3px] rounded-full border border-[#2c2d65]/30 text-[10.5px] font-medium">
             {event.type}
           </span>
-          <span className="inline-flex items-center gap-1 text-[11px] text-[#0B1B4A]/80">
+          <span className="inline-flex items-center gap-1 text-[11px] text-[#2c2d65]/80">
             <ClockIcon className="w-3.5 h-3.5" />
             {event.durationLabel}
           </span>
@@ -123,7 +123,7 @@ function EventCard({
 
         <h3 className="text-[14px] font-semibold leading-snug">{event.title}</h3>
 
-        <div className="flex items-center gap-4 pt-1 text-[11px] text-[#0B1B4A]/85">
+        <div className="flex items-center gap-4 pt-1 text-[11px] text-[#2c2d65]/85">
           <span className="inline-flex items-center gap-1">
             <CalendarIcon className="w-3.5 h-3.5" />
             {event.date}
@@ -187,7 +187,7 @@ export default function EventsPage() {
         </div>
         <div className="flex items-center gap-3">
           <div
-            className="w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-semibold text-[#0B1B4A] bg-white"
+            className="w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-semibold text-[#2c2d65] bg-white"
             style={{ boxShadow: "0 0 0 2px #26D9B5" }}
             title={avatarTitle}
           >

@@ -14,7 +14,7 @@ body,
 }
 
 body {
-  color: #1f2937;
+  color: #2c2d65;
   background: #ffffff;
   font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -50,7 +50,7 @@ body {
 .problem-prose h2 {
   font-size: 1rem;
   font-weight: 700;
-  color: #111827;
+  color: #2c2d65;
   margin-top: 1.25rem;
   margin-bottom: 0.5rem;
 }
@@ -58,7 +58,8 @@ body {
 .problem-prose li {
   font-size: 0.95rem;
   line-height: 1.6;
-  color: #1f2937;
+  font-weight: 500;
+  color: #2c2d65;
 }
 .problem-prose ul {
   list-style: disc;
@@ -91,7 +92,7 @@ body {
    box scroll horizontally rather than blow out its parent's width if
    something truly can't wrap. */
 .sample-box {
-  background: #F0F0F7;
+  background: #c0c3ca;
   border: 1.5px solid transparent;
   border-radius: 6px;
   padding: 10px 12px;
@@ -102,8 +103,16 @@ body {
   word-break: break-word;
   max-width: 100%;
   overflow-x: auto;
-  color: #0B1B4A;
+  color: #2c2d65;
   outline: none;
+}
+/* Test-case panel variant — light/transparent fill with a teal outline,
+   matching the bottom-right Input / Expected output / Custom-input
+   boxes in the workspace reference. */
+.sample-box-light {
+  background: #eff3f0;
+  border: 1.5px solid #a6e8d4;
+  color: #a8aaa3;
 }
 /* Teal border highlight when the user clicks/focuses an Input or
    Expected-output box. */
@@ -155,4 +164,12 @@ body {
 }
 .teal-scroll::-webkit-scrollbar-thumb:hover {
   background-color: #0DBA94;
+}
+
+/* Monaco editor — force a slightly bold weight on every token so the
+   syntax-highlighted code reads heavier without depending on the
+   font's own bold variant being installed locally. */
+.monaco-editor .view-line span,
+.monaco-editor [class*="mtk"] {
+  font-weight: 600 !important;
 }

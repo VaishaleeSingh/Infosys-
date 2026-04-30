@@ -27,6 +27,7 @@ import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { useStore, selectCurrentCode } from "@/store/useStore";
 import { EditorToolbar } from "@/components/EditorToolbar";
+import editorTheme from "@/lib/themes/infosys-light.json";
 
 // Monaco must be client-only; Next will SSR-skip the module itself.
 const MonacoEditor = dynamic(
@@ -91,16 +92,118 @@ export function CodeEditor() {
           width="100%"
           language={MONACO_LANGUAGE[language] ?? "python"}
           value={code}
-          theme="vs"
+          theme="infosys-light"
+          beforeMount={(monaco) => {
+            monaco.editor.defineTheme(
+              "infosys-light",
+              editorTheme as Parameters<
+                typeof monaco.editor.defineTheme
+              >[1]
+            );
+
+            // Override the cpp tokenizer so STL container types,
+            // STL streams, keyword constants, and function calls
+            // get their own token names the theme can color
+            // separately. Lookahead `(?=\s*\()` lets us tag any
+            // identifier-followed-by-`(` as a function name.
+            monaco.languages.setMonarchTokensProvider("cpp", {
+              defaultToken: "",
+              tokenPostfix: ".cpp",
+              keywords: [
+                "auto", "break", "case", "catch", "class", "const",
+                "constexpr", "continue", "default", "delete", "do",
+                "else", "enum", "explicit", "export", "extern",
+                "for", "friend", "goto", "if", "inline", "long",
+                "mutable", "namespace", "new", "operator",
+                "private", "protected", "public", "register",
+                "return", "short", "signed", "sizeof", "static",
+                "struct", "switch", "template", "this", "throw",
+                "try", "typedef", "typename", "union", "unsigned",
+                "using", "virtual", "void", "volatile", "while",
+                "int", "char", "float", "double", "bool",
+              ],
+              stlTypes: [
+                "vector", "pair", "tuple", "string", "map", "set",
+                "unordered_map", "unordered_set", "queue", "stack",
+                "deque", "priority_queue", "list", "array", "bitset",
+              ],
+              stlPredefined: [
+                "cin", "cout", "cerr", "clog", "ios_base",
+                "size_t", "ptrdiff_t",
+              ],
+              keywordConstants: [
+                "NULL", "nullptr", "true", "false",
+              ],
+              streamConstants: [
+                "endl", "flush", "ends",
+              ],
+              tokenizer: {
+                root: [
+                  [/\/\/.*$/, "comment"],
+                  [/\/\*/, "comment", "@comment"],
+                  [/^\s*#\s*\w+/, "keyword.directive"],
+                  [/<[^>]*\.h?>/, "string.include.identifier"],
+                  [/"/, "string", "@string"],
+                  [/'([^'\\]|\\.)*'/, "string"],
+                  [/\d+(\.\d+)?([eE][+-]?\d+)?[lLuUfF]*/, "number"],
+                  // Function call/definition: identifier followed
+                  // immediately by `(`.
+                  [
+                    /[A-Za-z_]\w*(?=\s*\()/,
+                    {
+                      cases: {
+                        "@keywords": "keyword",
+                        "@stlTypes": "type.identifier",
+                        "@stlPredefined": "predefined",
+                        "@streamConstants": "constant.builtin",
+                        "@keywordConstants": "constant",
+                        "@default": "entity.name.function",
+                      },
+                    },
+                  ],
+                  // Other identifiers — classify against the sets.
+                  [
+                    /[A-Za-z_]\w*/,
+                    {
+                      cases: {
+                        "@keywords": "keyword",
+                        "@stlTypes": "type.identifier",
+                        "@stlPredefined": "predefined",
+                        "@streamConstants": "constant.builtin",
+                        "@keywordConstants": "constant",
+                        "@default": "identifier",
+                      },
+                    },
+                  ],
+                  [/[{}()\[\]]/, "delimiter.bracket"],
+                  [/::|->|\+\+|--|<<|>>|&&|\|\||[!=<>]=|[+\-*/%&|^!=<>?:;,.]/, "operator"],
+                  [/\s+/, ""],
+                ],
+                comment: [
+                  [/[^\/*]+/, "comment"],
+                  [/\*\//, "comment", "@pop"],
+                  [/[\/*]/, "comment"],
+                ],
+                string: [
+                  [/[^\\"]+/, "string"],
+                  [/\\./, "string"],
+                  [/"/, "string", "@pop"],
+                ],
+              },
+            } as Parameters<
+              typeof monaco.languages.setMonarchTokensProvider
+            >[1]);
+          }}
           onChange={(val) => setCode(selectedId, val ?? "")}
           options={{
             minimap: { enabled: false },
-            fontSize: 13,
-            fontFamily: '"Fira Code", Consolas, "Courier New", monospace',
+            fontSize: 15,
+            fontWeight: "600",
+            fontFamily: 'Menlo, Consolas, "DejaVu Sans Mono", "Courier New", monospace',
             fontLigatures: true,
             lineNumbers: "on",
             scrollBeyondLastLine: false,
-            renderLineHighlight: "gutter",
+            renderLineHighlight: "line",
             smoothScrolling: true,
             tabSize: 4,
             insertSpaces: true,

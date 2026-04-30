@@ -25,7 +25,11 @@
  */
 
 import { create } from "zustand";
-import { problems, type Language } from "@/lib/problems";
+import {
+  problems,
+  type Language,
+  type ProblemContentOverride,
+} from "@/lib/problems";
 
 export type { Language };
 
@@ -74,6 +78,11 @@ type Store = {
    *  is open or closed; the chat reappears with the same on/off state
    *  the next time the drawer opens. */
   chatVisible: boolean;
+  /** Per-problem content overrides loaded from Supabase. Keyed by
+   *  `problem.id`; fields present here replace the hardcoded ones in
+   *  `lib/problems.ts`. Empty by default — populated once the loader
+   *  effect (in `app/page.tsx`) finishes its fetch. */
+  problemContentOverrides: Record<string, ProblemContentOverride>;
   isRunning: boolean;
   submitMessage: string | null;
 
@@ -103,6 +112,14 @@ type Store = {
   toggleCamera: () => void;
   toggleChat: () => void;
   setChatVisible: (open: boolean) => void;
+  setProblemContentOverrides: (
+    overrides: Record<string, ProblemContentOverride>,
+  ) => void;
+  upsertProblemContentOverride: (
+    id: string,
+    override: ProblemContentOverride,
+  ) => void;
+  removeProblemContentOverride: (id: string) => void;
   setConsoleOpen: (open: boolean) => void;
   setSubmitMessage: (msg: string | null) => void;
   triggerAutoSolve: (id: string, lang: Language) => void;
@@ -144,6 +161,7 @@ export const useStore = create<Store>((set, get) => ({
   sidebarOpen: false,
   cameraVisible: true,
   chatVisible: false,
+  problemContentOverrides: {},
   isRunning: false,
   submitMessage: null,
   editStartedAt: {},
@@ -214,6 +232,22 @@ export const useStore = create<Store>((set, get) => ({
   toggleCamera: () => set((s) => ({ cameraVisible: !s.cameraVisible })),
   toggleChat: () => set((s) => ({ chatVisible: !s.chatVisible })),
   setChatVisible: (open) => set({ chatVisible: open }),
+  setProblemContentOverrides: (overrides) =>
+    set({ problemContentOverrides: overrides }),
+  upsertProblemContentOverride: (id, override) =>
+    set((s) => ({
+      problemContentOverrides: {
+        ...s.problemContentOverrides,
+        [id]: override,
+      },
+    })),
+  removeProblemContentOverride: (id) =>
+    set((s) => {
+      if (!(id in s.problemContentOverrides)) return s;
+      const next = { ...s.problemContentOverrides };
+      delete next[id];
+      return { problemContentOverrides: next };
+    }),
   setSubmitMessage: (msg) => set({ submitMessage: msg }),
 
   ensureEditStart: (id, lang) => {

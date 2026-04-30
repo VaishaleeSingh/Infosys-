@@ -43,7 +43,7 @@ function PolicyCard({
         className="w-full flex items-center justify-between px-6 py-3.5 text-left"
       >
         <h2 className="flex items-baseline gap-2">
-          <span className="text-[17px] font-semibold text-[#0B1B4A]">
+          <span className="text-[17px] font-semibold text-[#2c2d65]">
             {title}
           </span>
           <span className="text-[11px] font-normal text-[#5B6280]">
@@ -51,7 +51,7 @@ function PolicyCard({
           </span>
         </h2>
         <svg
-          className={"w-4 h-4 text-[#0B1B4A] transition-transform " + (open ? "rotate-180" : "")}
+          className={"w-4 h-4 text-[#2c2d65] transition-transform " + (open ? "rotate-180" : "")}
           viewBox="0 0 20 20"
           fill="none"
           stroke="currentColor"
@@ -63,7 +63,7 @@ function PolicyCard({
         </svg>
       </button>
       {open && (
-        <div className="px-6 pb-6 pt-0 text-[#0B1B4A]">{children}</div>
+        <div className="px-6 pb-6 pt-0 text-[#2c2d65]">{children}</div>
       )}
     </section>
   );
@@ -129,7 +129,7 @@ export default function TermsPage() {
         <div className="flex items-center gap-3">
           {/* Candidate avatar — white interior, teal ring, dark initials */}
           <div
-            className="w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-semibold text-[#0B1B4A] bg-white"
+            className="w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-semibold text-[#2c2d65] bg-white"
             style={{ boxShadow: "0 0 0 2px #26D9B5" }}
             title={avatarTitle}
           >
@@ -141,13 +141,13 @@ export default function TermsPage() {
       <main className="flex-1 min-h-0 overflow-y-auto thin-scroll px-6 py-8">
         <div className="max-w-5xl mx-auto space-y-4">
           <PolicyCard title="Terms and Conditions" version="1.0.0" defaultOpen>
-            <p className="text-[13px] leading-relaxed text-[#0B1B4A] mb-3">
+            <p className="text-[13px] leading-relaxed text-[#2c2d65] mb-3">
               The access and use of any information on the Infosys Assessment
               Platform (hereinafter referred to as{" "}
               <span className="font-semibold">&ldquo;IAP&rdquo;</span>) shall
               be governed by the following Terms of Use:
             </p>
-            <ol className="space-y-2.5 text-[13px] leading-relaxed text-[#0B1B4A] list-none">
+            <ol className="space-y-2.5 text-[13px] leading-relaxed text-[#2c2d65] list-none">
               {TERMS_CLAUSES.map((c, i) => (
                 <li key={i} className="flex gap-3">
                   <span className="shrink-0 w-6 text-right">{i + 1}.</span>
@@ -158,7 +158,7 @@ export default function TermsPage() {
           </PolicyCard>
 
           <PolicyCard title="Data Privacy Policy" version="3.4.0">
-            <div className="text-[13px] leading-relaxed text-[#0B1B4A] space-y-3">
+            <div className="text-[13px] leading-relaxed text-[#2c2d65] space-y-3">
               <h3 className="text-center text-[14px] font-semibold tracking-wide pt-1">
                 PRIVACY NOTICE
               </h3>

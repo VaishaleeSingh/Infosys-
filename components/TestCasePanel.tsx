@@ -37,16 +37,17 @@ export function TestCasePanel() {
     (s) => s.customRunResultByProblem[selectedId]
   );
   const isRunning = useStore((s) => s.isRunning);
+  const overrides = useStore((s) => s.problemContentOverrides);
 
-  const problem = getProblemById(selectedId);
+  const problem = getProblemById(selectedId, overrides);
   if (!problem) return null;
 
   const activeSample = problem.samples[activeIdx];
 
   return (
-    <div className="h-full bg-white flex flex-col min-h-0">
+    <div className="h-full bg-[#f2f5ee] flex flex-col min-h-0">
       {/* Top tabs */}
-      <div className="shrink-0 flex items-center justify-around border-b border-panelBorder bg-white">
+      <div className="shrink-0 flex items-center justify-around border-b-[3px] border-panelBorder bg-[#f2f5ee]">
         <TopTab
           label="Test case"
           active={activeTab === "testcase"}
@@ -84,18 +85,18 @@ export function TestCasePanel() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <div className="text-[13px] text-[#0B1B4A] font-semibold mb-1.5">
+                <div className="text-[13px] text-[#2c2d65] font-semibold mb-1.5">
                   Input
                 </div>
-                <pre tabIndex={0} className="sample-box sample-box-focus max-h-32 overflow-auto teal-scroll">
+                <pre tabIndex={0} className="sample-box sample-box-light sample-box-focus max-h-32 overflow-auto teal-scroll">
 {activeSample ? activeSample.input : "(hidden test case)"}
                 </pre>
               </div>
               <div>
-                <div className="text-[13px] text-[#0B1B4A] font-semibold mb-1.5">
+                <div className="text-[13px] text-[#2c2d65] font-semibold mb-1.5">
                   Expected output
                 </div>
-                <pre tabIndex={0} className="sample-box sample-box-focus max-h-32 overflow-auto teal-scroll">
+                <pre tabIndex={0} className="sample-box sample-box-light sample-box-focus max-h-32 overflow-auto teal-scroll">
 {activeSample?.output ?? "(hidden test case)"}
                 </pre>
               </div>
@@ -105,7 +106,7 @@ export function TestCasePanel() {
 
         {activeTab === "custom" && (
           <div>
-            <div className="text-[13px] text-[#0B1B4A] font-semibold mb-1.5">
+            <div className="text-[13px] text-[#2c2d65] font-semibold mb-1.5">
               Custom Input (stdin)
             </div>
             <textarea
@@ -125,7 +126,7 @@ export function TestCasePanel() {
                 {customResult.error ? (
                   <ErrorBox text={customResult.error} />
                 ) : (
-                  <pre tabIndex={0} className="sample-box sample-box-focus max-h-28 overflow-auto teal-scroll">
+                  <pre tabIndex={0} className="sample-box sample-box-light sample-box-focus max-h-28 overflow-auto teal-scroll">
 {customResult.actual}
                   </pre>
                 )}
@@ -163,15 +164,15 @@ function TopTab({
     <button
       onClick={onClick}
       className={clsx(
-        "h-10 px-6 text-[13px] transition-colors relative",
+        "h-10 px-6 text-[14px] font-semibold transition-colors relative",
         active
-          ? "text-[#0B1B4A] font-semibold"
-          : "text-[#0B1B4A]/70 hover:text-[#0B1B4A]"
+          ? "text-[#2c2d65]"
+          : "text-[#2c2d65] hover:text-[#2c2d65]"
       )}
     >
       {label}
       {active && (
-        <span className="absolute left-0 right-0 bottom-0 h-[2px] bg-[#0B1B4A]" />
+        <span className="absolute -left-20 -right-20 -bottom-[3px] h-[3px] bg-[#2c2d65] z-10" />
       )}
     </button>
   );
@@ -193,10 +194,10 @@ function CasePill({
     <button
       onClick={onClick}
       className={clsx(
-        "h-7 px-4 text-[12px] font-medium rounded-md border transition-colors",
+        "h-6 px-2.5 text-[12px] font-semibold rounded-md border transition-colors",
         active
-          ? "bg-[#A6F0D9] text-[#0B1B4A] border-[#26D9B5]"
-          : "bg-white text-[#0B1B4A]/85 border-gray-300 hover:bg-gray-50"
+          ? "bg-[#64ecc7] text-[#2c2d65] border-[#64ecc7]"
+          : "bg-transparent text-[#2c2d65]/85 border-[#64ecc7] hover:bg-white/40"
       )}
     >
       Case {index + 1}
@@ -211,10 +212,10 @@ type Verdict = "passed" | "failed" | "timeout" | "error";
 
 function ResultPill({ index, verdict }: { index: number; verdict: Verdict }) {
   const styles: Record<Verdict, string> = {
-    passed: "bg-[#E8F8F1] text-[#0B1B4A] border-[#A6E3CA]",
-    failed: "bg-[#FBECEC] text-[#0B1B4A] border-[#F0BFBF]",
-    timeout: "bg-[#F2F2F2] text-[#0B1B4A] border-[#D5D5D5]",
-    error: "bg-[#FBECEC] text-[#0B1B4A] border-[#F0BFBF]",
+    passed: "bg-[#E8F8F1] text-[#2c2d65] border-[#A6E3CA]",
+    failed: "bg-[#FBECEC] text-[#2c2d65] border-[#F0BFBF]",
+    timeout: "bg-[#F2F2F2] text-[#2c2d65] border-[#D5D5D5]",
+    error: "bg-[#FBECEC] text-[#2c2d65] border-[#F0BFBF]",
   };
   return (
     <span
@@ -277,7 +278,7 @@ function ResultView({
 }) {
   if (isRunning && runResults.length === 0 && !customResult) {
     return (
-      <div className="h-full flex items-center justify-center text-[13px] text-[#0B1B4A]/70">
+      <div className="h-full flex items-center justify-center text-[13px] text-[#2c2d65]/70">
         <span className="animate-pulse">· Fetching results...</span>
       </div>
     );
@@ -319,7 +320,7 @@ function ResultView({
           </div>
 
           {/* Legend */}
-          <div className="flex items-center justify-end gap-4 pt-2 text-[11px] text-[#0B1B4A]/80">
+          <div className="flex items-center justify-end gap-4 pt-2 text-[11px] text-[#2c2d65]/80">
             <Legend dotClass="text-emerald-500" label="Passed" />
             <Legend dotClass="text-red-500" label="Failed" cross />
             <Legend dotClass="text-gray-500" label="Timed Out" clock />
@@ -398,7 +399,7 @@ function ResultTable({
 }) {
   return (
     <div>
-      <div className="grid grid-cols-[2fr_1fr_1fr_60px] gap-3 px-1 pb-2 text-[12px] font-medium text-[#0B1B4A]/80 border-b border-gray-200">
+      <div className="grid grid-cols-[2fr_1fr_1fr_60px] gap-3 px-1 pb-2 text-[12px] font-medium text-[#2c2d65]/80 border-b border-gray-200">
         <span>Input</span>
         <span>Expected output</span>
         <span>Output</span>
@@ -409,7 +410,7 @@ function ResultTable({
         return (
           <div
             key={r.caseIndex}
-            className="grid grid-cols-[2fr_1fr_1fr_60px] gap-3 px-1 py-3 border-b border-gray-100 text-[12px] text-[#0B1B4A]"
+            className="grid grid-cols-[2fr_1fr_1fr_60px] gap-3 px-1 py-3 border-b border-gray-100 text-[12px] text-[#2c2d65]"
           >
             <pre className="font-mono whitespace-pre-wrap break-words">
 {customLabel ? sample.input : (sample?.input ?? "")}

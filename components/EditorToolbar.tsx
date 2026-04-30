@@ -59,14 +59,14 @@ export function EditorToolbar() {
         <div className="relative" ref={ref}>
           <button
             onClick={() => setOpen((v) => !v)}
-            className="h-7 w-[110px] pl-3 pr-2 inline-flex items-center justify-between text-[12px] rounded-md bg-white text-[#0B1B4A] border border-gray-300 hover:bg-gray-50"
+            className="h-7 w-[110px] pl-3 pr-2 inline-flex items-center justify-between text-[12px] rounded-md bg-white text-[#2c2d65] border border-gray-300 hover:bg-gray-50"
             aria-haspopup="menu"
             aria-expanded={open}
           >
             <span>{LANGUAGE_LABELS[language]}</span>
             <svg
               viewBox="0 0 16 16"
-              className="w-3 h-3 text-[#0B1B4A]"
+              className="w-3 h-3 text-[#2c2d65]"
               fill="currentColor"
               aria-hidden
             >
@@ -89,7 +89,7 @@ export function EditorToolbar() {
                     setOpen(false);
                   }}
                   className={clsx(
-                    "w-full text-left text-[12px] px-3 py-1.5 text-[#0B1B4A] hover:bg-gray-50",
+                    "w-full text-left text-[12px] px-3 py-1.5 text-[#2c2d65] hover:bg-gray-50",
                     language === l && "bg-gray-50 font-semibold"
                   )}
                 >
@@ -103,7 +103,7 @@ export function EditorToolbar() {
         <button
           aria-label="AI assistant"
           title="AI assistant"
-          className="h-7 w-7 inline-flex items-center justify-center rounded-md bg-[#0B1B4A] text-white hover:bg-[#15235E] transition-colors"
+          className="h-7 w-7 inline-flex items-center justify-center rounded-md bg-[#2c2d65] text-white hover:bg-[#15235E] transition-colors"
         >
           {/* AI assistant — chat bubble with sparkle (compact). */}
           <svg
@@ -176,7 +176,7 @@ function IconBtn({
       onClick={onClick}
       aria-label={label}
       title={label}
-      className="h-7 w-7 inline-flex items-center justify-center rounded text-[#0B1B4A]/80 hover:text-[#0B1B4A] hover:bg-gray-100 transition-colors"
+      className="h-7 w-7 inline-flex items-center justify-center rounded text-[#2c2d65]/80 hover:text-[#2c2d65] hover:bg-gray-100 transition-colors"
     >
       {children}
     </button>

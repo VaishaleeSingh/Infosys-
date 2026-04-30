@@ -52,6 +52,10 @@ import {
 import { useAuthStore } from "@/store/useAuthStore";
 import { getProblemById, problems } from "@/lib/problems";
 import { runCode } from "@/lib/runner";
+import {
+  fetchProblemContent,
+  subscribeToProblemContent,
+} from "@/lib/supabase";
 import clsx from "clsx";
 
 export default function Page() {
@@ -70,6 +74,39 @@ export default function Page() {
   // 5-minute reference-solution timer — lives here so it's always mounted
   // during an active coding session.
   useAutoSolve();
+
+  // Fetch problem-content overrides from Supabase once on mount, then
+  // keep them in sync with a realtime subscription on `problem_content`.
+  // INSERT/UPDATE → upsert into the store; DELETE → remove. The store
+  // starts empty so missing config or fetch errors leave the hardcoded
+  // content showing unchanged.
+  const setProblemContentOverrides = useStore(
+    (s) => s.setProblemContentOverrides,
+  );
+  const upsertProblemContentOverride = useStore(
+    (s) => s.upsertProblemContentOverride,
+  );
+  const removeProblemContentOverride = useStore(
+    (s) => s.removeProblemContentOverride,
+  );
+  useEffect(() => {
+    let cancelled = false;
+    fetchProblemContent().then((overrides) => {
+      if (!cancelled) setProblemContentOverrides(overrides);
+    });
+    const channel = subscribeToProblemContent(
+      upsertProblemContentOverride,
+      removeProblemContentOverride,
+    );
+    return () => {
+      cancelled = true;
+      channel?.unsubscribe();
+    };
+  }, [
+    setProblemContentOverrides,
+    upsertProblemContentOverride,
+    removeProblemContentOverride,
+  ]);
 
   // Splitter positions from the store.
   const splitH = useStore((s) => s.splitHorizontal);
@@ -95,7 +132,10 @@ export default function Page() {
   /** Run ALL sample cases for the selected problem. */
   const runAllSamples = useCallback(async (): Promise<RunResult[]> => {
     const state = useStore.getState();
-    const problem = getProblemById(state.selectedProblemId);
+    const problem = getProblemById(
+      state.selectedProblemId,
+      state.problemContentOverrides,
+    );
     if (!problem) return [];
     const code = selectCurrentCode(state);
     const autoSolved =
@@ -148,7 +188,10 @@ export default function Page() {
   /** Run just the currently-selected sample. */
   const runSingleSample = useCallback(async () => {
     const state = useStore.getState();
-    const problem = getProblemById(state.selectedProblemId);
+    const problem = getProblemById(
+      state.selectedProblemId,
+      state.problemContentOverrides,
+    );
     if (!problem) return;
     const idx = state.activeCaseIndex;
     const s = problem.samples[idx];
@@ -194,7 +237,10 @@ export default function Page() {
   /** Run against the custom input textarea. */
   const runCustom = useCallback(async () => {
     const state = useStore.getState();
-    const problem = getProblemById(state.selectedProblemId);
+    const problem = getProblemById(
+      state.selectedProblemId,
+      state.problemContentOverrides,
+    );
     if (!problem) return;
     const code = selectCurrentCode(state);
     const stdin = state.customInputByProblem[problem.id] ?? "";
@@ -457,10 +503,10 @@ function ActionBar({
   const totalCount = problems.length;
 
   return (
-    <div className="shrink-0 h-11 bg-white flex items-center gap-2 px-3">
+    <div className="shrink-0 h-11 bg-[#f2f5ee] flex items-center gap-2 px-3">
       <button
         onClick={() => toggleConsole()}
-        className="inline-flex items-center gap-1 text-[13px] font-semibold text-[#0B1B4A] hover:text-[#0B1B4A]/80 transition-colors"
+        className="inline-flex items-center gap-1 text-[13px] font-semibold text-[#2c2d65] hover:text-[#2c2d65]/80 transition-colors"
         title={
           consoleOpen
             ? "Hide the console pane"
@@ -491,7 +537,7 @@ function ActionBar({
         onClick={onExecute}
         disabled={isRunning}
         className={clsx(
-          "h-8 px-5 rounded-md text-[13px] font-semibold text-[#0B1B4A] bg-[#26D9B5] hover:bg-[#3BE6C4] transition-colors",
+          "h-8 px-5 rounded-md text-[13px] font-semibold text-[#2c2d65] bg-[#26D9B5] hover:bg-[#3BE6C4] transition-colors",
           isRunning && "opacity-60 cursor-not-allowed"
         )}
       >
@@ -537,21 +583,21 @@ function PreferredLanguageModal({
       <div className="absolute inset-0 bg-black/40" aria-hidden />
       <div className="relative w-full max-w-md rounded-xl bg-white shadow-2xl p-6">
         <div className="flex items-center gap-3 mb-2">
-          <span className="text-[#0B1B4A] text-[20px] font-bold tracking-tight">
+          <span className="text-[#2c2d65] text-[20px] font-bold tracking-tight">
             &lt;/&gt;
           </span>
-          <h2 className="text-[18px] font-semibold text-[#0B1B4A]">
+          <h2 className="text-[18px] font-semibold text-[#2c2d65]">
             Preferred Language
           </h2>
         </div>
-        <p className="text-[13px] text-[#0B1B4A] mb-3">
+        <p className="text-[13px] text-[#2c2d65] mb-3">
           Select your preferred programming language
         </p>
         <div className="relative">
           <select
             value={value}
             onChange={(e) => onChange(e.target.value as Language)}
-            className="w-full h-10 px-3 pr-9 rounded-md border border-gray-300 bg-white text-[14px] text-[#0B1B4A] appearance-none focus:outline-none focus:border-[#26D9B5]"
+            className="w-full h-10 px-3 pr-9 rounded-md border border-gray-300 bg-white text-[14px] text-[#2c2d65] appearance-none focus:outline-none focus:border-[#26D9B5]"
           >
             <option value="python">Python 3</option>
             <option value="java">Java</option>
@@ -560,7 +606,7 @@ function PreferredLanguageModal({
           </select>
           <svg
             viewBox="0 0 16 16"
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 text-[#0B1B4A] pointer-events-none"
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 text-[#2c2d65] pointer-events-none"
             fill="none"
             stroke="currentColor"
             strokeWidth={2}
@@ -677,7 +723,7 @@ function ConsolePane({ onClose }: { onClose: () => void }) {
   const last = customResult ?? runResults[runResults.length - 1];
   return (
     <div className="m-1.5 mt-0">
-      <div className="bg-[#0B1B4A] text-white rounded-md shadow-panel overflow-hidden flex flex-col" style={{ minHeight: 120 }}>
+      <div className="bg-[#2c2d65] text-white rounded-md shadow-panel overflow-hidden flex flex-col" style={{ minHeight: 120 }}>
         <div className="flex items-center justify-between px-3 h-8 border-b border-white/10 text-[12px] font-semibold">
           <span>Console</span>
           <button
@@ -713,13 +759,13 @@ function DividerOrScrollbar() {
   const submitted = runResults.length >= 12;
   if (!submitted) {
     return (
-      <div className="shrink-0 px-0 bg-white">
-        <div className="h-px w-full" style={{ background: "#0B1B4A" }} />
+      <div className="shrink-0 px-0 bg-[#f2f5ee]">
+        <div className="h-px w-full" style={{ background: "#DCE5DC" }} />
       </div>
     );
   }
   return (
-    <div className="shrink-0 px-4 py-1.5 bg-white">
+    <div className="shrink-0 px-4 py-1.5 bg-[#f2f5ee]">
       <div className="h-1.5 w-full rounded-full" style={{ background: "#14C9A4" }} />
     </div>
   );

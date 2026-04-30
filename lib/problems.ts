@@ -64,6 +64,24 @@ export type Problem = {
   solutionCode: LangCode;
 };
 
+/** Subset of a Problem that can be overridden at runtime from Supabase
+ *  (see `lib/supabase.ts#fetchProblemContent`). Code blobs and the `id`
+ *  itself stay hardcoded — only the human-readable content is dynamic. */
+export type ProblemContentOverride = Partial<
+  Pick<
+    Problem,
+    | "number"
+    | "difficulty"
+    | "title"
+    | "statement"
+    | "notes"
+    | "rules"
+    | "inputFormat"
+    | "constraints"
+    | "samples"
+  >
+>;
+
 /* ------------------------------------------------------------------ */
 /*  Generic per-language scaffolds                                     */
 /*                                                                     */
@@ -1148,6 +1166,21 @@ console.log(gameScore(N, M, Two, A, Edges));`),
   },
 ];
 
-export function getProblemById(id: string): Problem | undefined {
-  return problems.find((p) => p.id === id);
+/**
+ * Look up a problem by id and apply any Supabase-loaded content overrides.
+ *
+ * The override map is optional — when omitted (e.g. inside `lib/runner`
+ * where overrides aren't relevant), the hardcoded base problem is
+ * returned as-is. When passed, fields present in the override replace
+ * the hardcoded ones; absent fields fall back to the hardcoded values.
+ */
+export function getProblemById(
+  id: string,
+  overrides?: Record<string, ProblemContentOverride>,
+): Problem | undefined {
+  const base = problems.find((p) => p.id === id);
+  if (!base) return undefined;
+  const ov = overrides?.[id];
+  if (!ov) return base;
+  return { ...base, ...ov };
 }

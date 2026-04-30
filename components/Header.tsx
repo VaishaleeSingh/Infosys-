@@ -86,13 +86,13 @@ export function Header() {
 
         <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
           {/* Timer pill */}
-          <div className="inline-flex items-center h-8 px-4 rounded-md bg-white text-[#0B1B4A] text-[13px] font-semibold tracking-tight shadow-sm">
+          <div className="inline-flex items-center h-8 px-4 rounded-md bg-white text-[#2c2d65] text-[13px] font-semibold tracking-tight shadow-sm">
             <span>{fmt(remaining)}</span>
           </div>
           {/* Separate camera/recording pill — toggleable via the
               Documents icon in the sidebar rail. */}
           {cameraVisible && (
-            <div className="inline-flex items-center justify-center h-8 w-9 rounded-md bg-white text-[#0B1B4A] shadow-sm">
+            <div className="inline-flex items-center justify-center h-8 w-9 rounded-md bg-white text-[#2c2d65] shadow-sm">
               <svg
                 viewBox="0 0 16 16"
                 className="w-4 h-4"
@@ -162,7 +162,7 @@ function ReviewModal({
       <div className="relative w-full max-w-md rounded-xl bg-white shadow-2xl p-5">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-start gap-3">
-            <span className="inline-flex w-7 h-7 items-center justify-center text-[#0B1B4A] mt-0.5">
+            <span className="inline-flex w-7 h-7 items-center justify-center text-[#2c2d65] mt-0.5">
               <svg
                 viewBox="0 0 24 24"
                 className="w-6 h-6"
@@ -178,7 +178,7 @@ function ReviewModal({
               </svg>
             </span>
             <div>
-              <h2 className="text-[16px] font-semibold text-[#0B1B4A]">
+              <h2 className="text-[16px] font-semibold text-[#2c2d65]">
                 Review before Finishing
               </h2>
               <p className="text-[12px] text-gray-600 mt-0.5">
@@ -212,25 +212,25 @@ function ReviewModal({
           <ReviewStat color="#D97706" bg="#FEF6D9" value={0} label="FLAGGED" />
         </div>
 
-        <div className="text-[11px] font-semibold text-[#0B1B4A]/70 tracking-wide mb-2">
+        <div className="text-[11px] font-semibold text-[#2c2d65]/70 tracking-wide mb-2">
           SECTION BREAKDOWN
         </div>
 
         <div className="rounded-md border border-gray-200 px-4 py-3 mb-5 flex items-center">
           <div>
-            <div className="text-[14px] font-semibold text-[#0B1B4A]">
+            <div className="text-[14px] font-semibold text-[#2c2d65]">
               Coding Hands-on
             </div>
             <div className="text-[11px] text-gray-500">{total} questions</div>
           </div>
           <div className="ml-auto flex items-center gap-3 text-[12px]">
-            <span className="inline-flex items-center gap-1 text-[#0B1B4A]/85">
+            <span className="inline-flex items-center gap-1 text-[#2c2d65]/85">
               <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={1.6}>
                 <rect x="3.5" y="2.5" width="9" height="11" rx="1" />
               </svg>
               {answered}
             </span>
-            <span className="inline-flex items-center gap-1 text-[#0B1B4A]/85">
+            <span className="inline-flex items-center gap-1 text-[#2c2d65]/85">
               <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={1.6}>
                 <line x1="3.5" y1="2" x2="3.5" y2="14" />
                 <path d="M3.5 2.5 L12.5 4 L3.5 8.5 Z" fill="currentColor" />
@@ -250,7 +250,7 @@ function ReviewModal({
           </div>
         </div>
 
-        <label className="flex items-center gap-2 mb-5 cursor-pointer select-none text-[13px] text-[#0B1B4A]">
+        <label className="flex items-center gap-2 mb-5 cursor-pointer select-none text-[13px] text-[#2c2d65]">
           <span className="relative inline-flex items-center justify-center">
             <input
               type="checkbox"
@@ -262,7 +262,7 @@ function ReviewModal({
               className={
                 "w-[18px] h-[18px] rounded-[3px] border " +
                 (confirm
-                  ? "bg-[#0B1B4A] border-[#0B1B4A]"
+                  ? "bg-[#2c2d65] border-[#2c2d65]"
                   : "bg-white border-gray-400")
               }
             />

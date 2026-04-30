@@ -17,6 +17,7 @@
 import { useStore } from "@/store/useStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { getProblemById } from "@/lib/problems";
+import { Flag } from "lucide-react";
 
 /** Diagonal repeating-text watermark. The text is the candidate's
  *  username/ID, tiled across the panel at -22°. Pure decorative — it
@@ -54,7 +55,8 @@ function Watermark({ text }: { text: string }) {
 
 export function ProblemDescription() {
   const selectedId = useStore((s) => s.selectedProblemId);
-  const problem = getProblemById(selectedId);
+  const overrides = useStore((s) => s.problemContentOverrides);
+  const problem = getProblemById(selectedId, overrides);
   const user = useAuthStore((s) => s.user);
   if (!problem) return null;
 
@@ -63,12 +65,11 @@ export function ProblemDescription() {
   const watermarkText = (user?.candidateId ?? "candidate").toLowerCase();
 
   return (
-    <div className="h-full w-full min-w-0 overflow-y-auto teal-scroll bg-panel relative">
-      <Watermark text={watermarkText} />
-
-      {/* Breadcrumb header — pinned visually at top with the flag. */}
-      <div className="sticky top-0 z-20 bg-panel/95 backdrop-blur-sm border-b border-panelBorder px-4 sm:px-6 py-2.5 flex items-center justify-between">
-        <div className="text-[14px] text-[#0B1B4A]">
+    <div className="h-full w-full min-w-0 flex flex-col bg-[#f2f5ee] relative">
+      {/* Breadcrumb header — sits above the scroll area so the teal
+          scrollbar only spans the body, not the header. */}
+      <div className="shrink-0 z-20 bg-[#f2f5ee] border-b border-panelBorder px-4 sm:px-6 py-2.5 flex items-center justify-between">
+        <div className="text-[14px] text-[#2c2d65]">
           <span className="font-bold">Coding Hands-on</span>
           <span className="mx-2 text-gray-400">›</span>
           <span className="font-bold">Question {problem.number}</span>
@@ -76,23 +77,15 @@ export function ProblemDescription() {
         <button
           type="button"
           title="Flag this question for review"
-          className="text-[#0B1B4A]/60 hover:text-[#0B1B4A] transition-colors"
+          className="text-[#2c2d65]/60 hover:text-[#2c2d65] transition-colors"
         >
-          <svg
-            viewBox="0 0 16 16"
-            className="w-4 h-4"
-            fill="currentColor"
-            aria-hidden
-          >
-            {/* "P"-shaped flag: vertical pole + filled rectangular
-                pennant at the top, matching the reference. */}
-            <rect x="4" y="3" width="7" height="5" rx="0.5" />
-            <rect x="3.4" y="2" width="1.2" height="12" rx="0.5" />
-          </svg>
+          <Flag className="w-3 h-3" strokeWidth={3} />
         </button>
       </div>
 
-      <div className="relative z-10 px-4 sm:px-6 py-5 problem-prose break-words">
+      <div className="flex-1 min-h-0 overflow-y-auto teal-scroll relative">
+        <Watermark text={watermarkText} />
+        <div className="relative z-10 px-4 sm:px-6 py-5 problem-prose break-words">
         <div className="w-full max-w-3xl">
           {/* Problem statement */}
           <div className="space-y-3">
@@ -123,14 +116,21 @@ export function ProblemDescription() {
             </>
           )}
 
-          {/* Input Format card */}
-          <div className="mt-5 rounded-md bg-[#EDEEF2] border border-[#D7D9E0] p-4">
-            <h2 className="!mt-0 !mb-3">Input Format</h2>
-            <div className="space-y-2.5">
+          {/* Input Format — single light-green container holding the
+              heading + a flat list. Items are separated by a subtle
+              horizontal rule, no individual rounded cards. */}
+          <div className="mt-5 rounded-md bg-transparent border border-[#DCE5DC]">
+            <h2 className="!mt-0 !mb-0 px-4 pt-3 pb-2">Input Format</h2>
+            <div className="border-t border-[#DCE5DC]">
               {problem.inputFormat.map((l, i) => (
                 <div
                   key={i}
-                  className="rounded-md bg-white/70 border border-[#E2E3EA] px-3 py-2 text-[13px] leading-relaxed text-[#0B1B4A]"
+                  className={
+                    "px-4 py-2.5 text-[13px] leading-relaxed font-medium text-[#2c2d65]" +
+                    (i < problem.inputFormat.length - 1
+                      ? " border-b border-[#DCE5DC]"
+                      : "")
+                  }
                 >
                   {l}
                 </div>
@@ -138,14 +138,20 @@ export function ProblemDescription() {
             </div>
           </div>
 
-          {/* Constraints card */}
-          <div className="mt-4 rounded-md bg-[#EDEEF2] border border-[#D7D9E0] p-4">
-            <h2 className="!mt-0 !mb-3">Constraints</h2>
-            <div className="space-y-2.5">
+          {/* Constraints — same flat-list treatment, mono font for
+              expressions. */}
+          <div className="mt-4 rounded-md bg-transparent border border-[#DCE5DC]">
+            <h2 className="!mt-0 !mb-0 px-4 pt-3 pb-2">Constraints</h2>
+            <div className="border-t border-[#DCE5DC]">
               {problem.constraints.map((c, i) => (
                 <div
                   key={i}
-                  className="rounded-md bg-white/70 border border-[#E2E3EA] px-3 py-2 text-[13px] font-mono text-[#0B1B4A]"
+                  className={
+                    "px-4 py-2.5 text-[13px] font-mono font-medium text-[#2c2d65]" +
+                    (i < problem.constraints.length - 1
+                      ? " border-b border-[#DCE5DC]"
+                      : "")
+                  }
                 >
                   {c}
                 </div>
@@ -153,45 +159,49 @@ export function ProblemDescription() {
             </div>
           </div>
 
-          {/* Sample Test Cases */}
+          {/* Sample Test Cases — heading once at the top; each case is a
+              flat block (no outer card) with Case label, Input, Output,
+              and Explanation rendered as `.sample-box` panels. */}
           <h2 className="mt-5">Sample Test Cases</h2>
-          <div className="space-y-4">
+          <div className="space-y-5">
             {problem.samples.map((s, i) => (
-              <div
-                key={i}
-                className="rounded-md bg-[#EDEEF2] border border-[#D7D9E0] p-4 space-y-3"
-              >
-                <div className="text-[13px] font-semibold text-[#0B1B4A]">
+              <div key={i} className="space-y-2.5">
+                <div className="text-[14px] font-semibold text-[#2c2d65]">
                   Case {i + 1}
                 </div>
-                <div>
-                  <div className="text-[12px] text-[#0B1B4A]/80 mb-1">Input:</div>
-                  <div className="sample-box">{s.input}</div>
+                <div className="pl-2 space-y-2.5">
+                  <div>
+                    <div className="text-[12px] font-semibold text-[#2c2d65] mb-0">
+                      Input:
+                    </div>
+                    <div className="sample-box">{s.input}</div>
+                  </div>
+                  {s.output !== undefined && (
+                    <div>
+                      <div className="text-[12px] font-semibold text-[#2c2d65] mb-0">
+                        Output:
+                      </div>
+                      <div className="sample-box">{s.output}</div>
+                    </div>
+                  )}
+                  {s.explanation && (
+                    <div>
+                      <div className="text-[12px] font-semibold text-[#2c2d65] mb-0">
+                        Explanation:
+                      </div>
+                      <div className="sample-box whitespace-pre-wrap">
+                        {s.explanation}
+                      </div>
+                    </div>
+                  )}
                 </div>
-                {s.output !== undefined && (
-                  <div>
-                    <div className="text-[12px] text-[#0B1B4A]/80 mb-1">
-                      Output:
-                    </div>
-                    <div className="sample-box">{s.output}</div>
-                  </div>
-                )}
-                {s.explanation && (
-                  <div>
-                    <div className="text-[12px] text-[#0B1B4A]/80 mb-1">
-                      Explanation:
-                    </div>
-                    <div className="sample-box whitespace-pre-wrap">
-                      {s.explanation}
-                    </div>
-                  </div>
-                )}
               </div>
             ))}
           </div>
 
           <div className="h-40" />
         </div>
+      </div>
       </div>
     </div>
   );

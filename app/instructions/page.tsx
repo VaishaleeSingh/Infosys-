@@ -63,14 +63,14 @@ function TermsModal({
       <div className="relative w-full max-w-3xl max-h-[80vh] flex flex-col rounded-md bg-white shadow-2xl">
         {/* Header */}
         <div className="flex items-start justify-between px-6 pt-5 pb-3 border-b border-gray-200">
-          <h2 className="text-[18px] font-semibold text-[#0B1B4A]">
+          <h2 className="text-[18px] font-semibold text-[#2c2d65]">
             Terms and Conditions
           </h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="text-[#0B1B4A]/60 hover:text-[#0B1B4A] -mt-0.5"
+            className="text-[#2c2d65]/60 hover:text-[#2c2d65] -mt-0.5"
           >
             <svg
               viewBox="0 0 16 16"
@@ -87,7 +87,7 @@ function TermsModal({
         </div>
 
         {/* Body — scrollable, with a custom teal scrollbar */}
-        <div className="flex-1 overflow-y-auto teal-scroll px-6 py-4 text-[13px] leading-relaxed text-[#0B1B4A]">
+        <div className="flex-1 overflow-y-auto teal-scroll px-6 py-4 text-[13px] leading-relaxed text-[#2c2d65]">
           <p className="mb-3">
             The access and use of any information on the Infosys Assessment
             Platform (hereinafter referred to as &ldquo;IAP&rdquo;) shall be
@@ -169,7 +169,7 @@ export default function InstructionsPage() {
         </div>
         <div className="flex items-center gap-3">
           <div
-            className="w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-semibold text-[#0B1B4A] bg-white"
+            className="w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-semibold text-[#2c2d65] bg-white"
             style={{ boxShadow: "0 0 0 2px #26D9B5" }}
             title={avatarTitle}
           >
@@ -183,18 +183,18 @@ export default function InstructionsPage() {
         <div className="w-full bg-[#F4F1E8] rounded-md shadow-[0_1px_3px_rgba(0,0,0,0.35)] overflow-hidden flex flex-col min-h-[calc(100vh-6rem)]">
           {/* Teal title banner */}
           <div className="h-14 shrink-0 bg-[#33D8B5] flex items-center justify-center">
-            <h1 className="text-[16px] md:text-[17px] font-semibold text-[#0B1B4A]">
+            <h1 className="text-[16px] md:text-[17px] font-semibold text-[#2c2d65]">
               {ASSESSMENT_TITLE} - Instructions
             </h1>
           </div>
 
           {/* Content */}
           <div className="flex-1 px-6 md:px-10 py-6 flex flex-col">
-            <p className="text-[14px] font-semibold text-[#0B1B4A] mb-4">
+            <p className="text-[14px] font-semibold text-[#2c2d65] mb-4">
               Kindly read the instructions before proceeding.
             </p>
 
-            <ol className="space-y-2 text-[13px] leading-relaxed text-[#0B1B4A] list-none">
+            <ol className="space-y-2 text-[13px] leading-relaxed text-[#2c2d65] list-none">
               {INSTRUCTIONS.map((line, i) => (
                 <li key={i} className="flex gap-2.5">
                   <span className="shrink-0 w-6 text-right">{i + 1}.</span>
@@ -203,7 +203,7 @@ export default function InstructionsPage() {
               ))}
             </ol>
 
-            <p className="mt-3 text-[13px] text-[#0B1B4A]">All the best!!</p>
+            <p className="mt-3 text-[13px] text-[#2c2d65]">All the best!!</p>
 
             {/* Start button — pushed to the bottom of the card */}
             <div className="flex-1" />

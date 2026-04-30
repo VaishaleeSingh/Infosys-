@@ -127,7 +127,7 @@ function Stepper({ current }: { current: number }) {
             {i > 0 && (
               <div
                 className="absolute top-[14px] right-[50%] w-full h-px"
-                style={{ background: lineDone ? "#0B1B4A" : "#D1D5DB" }}
+                style={{ background: lineDone ? "#2c2d65" : "#D1D5DB" }}
               />
             )}
             <div className="relative z-10 mb-2">
@@ -135,7 +135,7 @@ function Stepper({ current }: { current: number }) {
                 <div className="w-7 h-7 rounded-full bg-[#26D9B5] flex items-center justify-center">
                   <svg
                     viewBox="0 0 16 16"
-                    className="w-3.5 h-3.5 text-[#0B1B4A]"
+                    className="w-3.5 h-3.5 text-[#2c2d65]"
                     fill="none"
                     stroke="currentColor"
                     strokeWidth={2.4}
@@ -154,10 +154,10 @@ function Stepper({ current }: { current: number }) {
               )}
             </div>
             <div className="text-center px-1">
-              <div className="text-[13px] font-semibold text-[#0B1B4A] leading-tight">
+              <div className="text-[13px] font-semibold text-[#2c2d65] leading-tight">
                 {s.title}
               </div>
-              <div className="text-[11px] text-[#0B1B4A]/70 mt-1 leading-snug">
+              <div className="text-[11px] text-[#2c2d65]/70 mt-1 leading-snug">
                 {s.subtitle}
               </div>
             </div>
@@ -222,10 +222,10 @@ function SystemBody({ os, browser }: { os: string; browser: string }) {
     <TwoColumn
       left={
         <div className="max-w-md">
-          <h3 className="text-[15px] font-semibold text-[#0B1B4A] mb-3 text-center">
+          <h3 className="text-[15px] font-semibold text-[#2c2d65] mb-3 text-center">
             System Requirements
           </h3>
-          <p className="text-[13px] leading-relaxed text-[#0B1B4A]/85 text-left">
+          <p className="text-[13px] leading-relaxed text-[#2c2d65]/85 text-left">
             Windows 10 &amp; above, Mac 10 &amp; above, any version of Linux
             are the supported operating systems. Chrome 109 &amp; above, Edge
             109 &amp; above are the supported browsers
@@ -234,11 +234,11 @@ function SystemBody({ os, browser }: { os: string; browser: string }) {
       }
       right={
         <div className="flex flex-col items-start space-y-3">
-          <div className="flex items-center gap-3 text-[14px] text-[#0B1B4A]">
+          <div className="flex items-center gap-3 text-[14px] text-[#2c2d65]">
             <CheckPill />
             <span>{os}</span>
           </div>
-          <div className="flex items-center gap-3 text-[14px] text-[#0B1B4A]">
+          <div className="flex items-center gap-3 text-[14px] text-[#2c2d65]">
             <CheckPill />
             <span>{browser}</span>
           </div>
@@ -266,10 +266,10 @@ function PermissionsBody({
     <TwoColumn
       left={
         <div className="max-w-md text-center">
-          <h3 className="text-[15px] font-semibold text-[#0B1B4A] mb-3">
+          <h3 className="text-[15px] font-semibold text-[#2c2d65] mb-3">
             Browser Permissions
           </h3>
-          <p className="text-[13px] leading-relaxed text-[#0B1B4A]/85">
+          <p className="text-[13px] leading-relaxed text-[#2c2d65]/85">
             We need access to your camera, clipboard and browser storage
             during the exam
           </p>
@@ -280,11 +280,11 @@ function PermissionsBody({
           <div className="flex items-start gap-3">
             {webcam ? <CheckPill /> : <PendingPill />}
             <div>
-              <div className="text-[14px] font-semibold text-[#0B1B4A]">
+              <div className="text-[14px] font-semibold text-[#2c2d65]">
                 Webcam Access
               </div>
               {!webcam && (
-                <div className="text-[12px] text-[#0B1B4A]/80 mt-0.5">
+                <div className="text-[12px] text-[#2c2d65]/80 mt-0.5">
                   Allow webcam access in the browser settings or by clicking{" "}
                   <button
                     type="button"
@@ -299,13 +299,13 @@ function PermissionsBody({
           </div>
           <div className="flex items-center gap-3">
             {clipboard ? <CheckPill /> : <PendingPill />}
-            <span className="text-[14px] font-semibold text-[#0B1B4A]">
+            <span className="text-[14px] font-semibold text-[#2c2d65]">
               Clipboard Access
             </span>
           </div>
           <div className="flex items-center gap-3">
             {storage ? <CheckPill /> : <PendingPill />}
-            <span className="text-[14px] font-semibold text-[#0B1B4A]">
+            <span className="text-[14px] font-semibold text-[#2c2d65]">
               Storage Access
             </span>
           </div>
@@ -335,7 +335,7 @@ function SpeedGauge({ mbps }: { mbps: number | null }) {
         <path
           d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
           fill="none"
-          stroke="#0B1B4A"
+          stroke="#2c2d65"
           strokeWidth={26}
           strokeLinecap="round"
         />
@@ -351,7 +351,7 @@ function SpeedGauge({ mbps }: { mbps: number | null }) {
           style={{ transition: "stroke-dashoffset 600ms ease" }}
         />
       </svg>
-      <div className="flex items-center gap-2 -mt-2 text-[14px] text-[#0B1B4A]">
+      <div className="flex items-center gap-2 -mt-2 text-[14px] text-[#2c2d65]">
         <span className="font-semibold">
           {mbps == null ? "--" : mbps.toFixed(2)} Mbps
         </span>
@@ -373,10 +373,10 @@ function NetworkBody({
     <TwoColumn
       left={
         <div className="max-w-md text-center">
-          <h3 className="text-[15px] font-semibold text-[#0B1B4A] mb-3">
+          <h3 className="text-[15px] font-semibold text-[#2c2d65] mb-3">
             Network Requirements
           </h3>
-          <p className="text-[13px] leading-relaxed text-[#0B1B4A]/85">
+          <p className="text-[13px] leading-relaxed text-[#2c2d65]/85">
             We require a minimum internet speed of 2 Mbps for a seamless
             experience
           </p>
@@ -389,7 +389,7 @@ function NetworkBody({
             type="button"
             onClick={onRetest}
             disabled={testing}
-            className="mt-1 inline-flex items-center gap-1 text-[12px] text-[#0B1B4A]/70 hover:text-[#0B1B4A] disabled:opacity-50"
+            className="mt-1 inline-flex items-center gap-1 text-[12px] text-[#2c2d65]/70 hover:text-[#2c2d65] disabled:opacity-50"
             aria-label="Retest"
           >
             <svg
@@ -438,10 +438,10 @@ function IdentificationBody({
     <TwoColumn
       left={
         <div className="max-w-md text-center">
-          <h3 className="text-[15px] font-semibold text-[#0B1B4A] mb-3">
+          <h3 className="text-[15px] font-semibold text-[#2c2d65] mb-3">
             Identification
           </h3>
-          <p className="text-[13px] leading-relaxed text-[#0B1B4A]/85">
+          <p className="text-[13px] leading-relaxed text-[#2c2d65]/85">
             We require your image for identification.
           </p>
         </div>
@@ -453,7 +453,7 @@ function IdentificationBody({
               <select
                 value={selectedCamera}
                 onChange={(e) => onSelectCamera(e.target.value)}
-                className="text-[12px] text-[#0B1B4A] bg-white rounded-md border border-gray-300 px-3 py-1.5"
+                className="text-[12px] text-[#2c2d65] bg-white rounded-md border border-gray-300 px-3 py-1.5"
               >
                 {cameras.map((c) => (
                   <option key={c.deviceId} value={c.deviceId}>
@@ -481,7 +481,7 @@ function IdentificationBody({
               />
             )}
           </div>
-          <p className="mt-3 text-[12px] text-[#0B1B4A]/85 text-center max-w-[280px]">
+          <p className="mt-3 text-[12px] text-[#2c2d65]/85 text-center max-w-[280px]">
             {capturedImage
               ? "Image captured. You may proceed."
               : "We have not captured your image yet. Capture your image and continue."}
@@ -489,7 +489,7 @@ function IdentificationBody({
           <button
             type="button"
             onClick={onCapture}
-            className="mt-2 h-9 px-5 rounded-md text-[13px] font-semibold bg-[#26D9B5] text-[#0B1B4A] hover:bg-[#3BE6C4] transition-colors"
+            className="mt-2 h-9 px-5 rounded-md text-[13px] font-semibold bg-[#26D9B5] text-[#2c2d65] hover:bg-[#3BE6C4] transition-colors"
           >
             {capturedImage ? "Retake" : "Capture Image"}
           </button>
@@ -513,10 +513,10 @@ function ExamModeBody({
     <TwoColumn
       left={
         <div className="max-w-md">
-          <h3 className="text-[15px] font-semibold text-[#0B1B4A] mb-3 text-center">
+          <h3 className="text-[15px] font-semibold text-[#2c2d65] mb-3 text-center">
             Exam Mode
           </h3>
-          <p className="text-[13px] leading-relaxed text-[#0B1B4A]/85 text-left">
+          <p className="text-[13px] leading-relaxed text-[#2c2d65]/85 text-left">
             We require the browser to be in full screen mode through out the
             duration of the exam, and all your activities during this time
             will be monitored. Any form of malpractice attempt will be
@@ -529,11 +529,11 @@ function ExamModeBody({
           <div className="flex items-start gap-3">
             {fullscreen ? <CheckPill /> : <PendingPill />}
             <div>
-              <div className="text-[14px] font-semibold text-[#0B1B4A]">
+              <div className="text-[14px] font-semibold text-[#2c2d65]">
                 Full Screen
               </div>
               {!fullscreen && (
-                <div className="text-[12px] text-[#0B1B4A]/80 mt-0.5">
+                <div className="text-[12px] text-[#2c2d65]/80 mt-0.5">
                   Switch to full screen by clicking{" "}
                   <button
                     type="button"
@@ -549,11 +549,11 @@ function ExamModeBody({
           <div className="flex items-start gap-3">
             {fullscreen ? <CheckPill /> : <PendingPill />}
             <div>
-              <div className="text-[14px] font-semibold text-[#0B1B4A]">
+              <div className="text-[14px] font-semibold text-[#2c2d65]">
                 Exam Mode
               </div>
               {!fullscreen && (
-                <div className="text-[12px] text-[#0B1B4A]/80 mt-0.5">
+                <div className="text-[12px] text-[#2c2d65]/80 mt-0.5">
                   One or more prerequisite have not been met. Please review
                   the failed steps.
                 </div>
@@ -599,7 +599,7 @@ function LaunchExamModal({
     onChange: (v: boolean) => void;
     label: string;
   }) => (
-    <label className="flex items-center gap-3 text-[13px] text-[#0B1B4A] cursor-pointer select-none">
+    <label className="flex items-center gap-3 text-[13px] text-[#2c2d65] cursor-pointer select-none">
       <span className="relative inline-flex items-center justify-center">
         <input
           type="checkbox"
@@ -641,10 +641,10 @@ function LaunchExamModal({
       />
       <div className="relative w-full max-w-md rounded-md bg-white shadow-2xl p-6">
         <div className="flex items-center gap-3 mb-4">
-          <span className="inline-flex w-7 h-7 rounded-full bg-[#0B1B4A] items-center justify-center text-white text-[13px] font-bold">
+          <span className="inline-flex w-7 h-7 rounded-full bg-[#2c2d65] items-center justify-center text-white text-[13px] font-bold">
             i
           </span>
-          <h2 className="text-[18px] font-semibold text-[#0B1B4A]">
+          <h2 className="text-[18px] font-semibold text-[#2c2d65]">
             Launch Exam?
           </h2>
         </div>
@@ -657,7 +657,7 @@ function LaunchExamModal({
           <button
             type="button"
             onClick={onCancel}
-            className="h-10 px-5 rounded-md text-[13px] font-semibold bg-[#0B1B4A] text-white hover:bg-[#15235E]"
+            className="h-10 px-5 rounded-md text-[13px] font-semibold bg-[#2c2d65] text-white hover:bg-[#15235E]"
           >
             Cancel
           </button>
@@ -915,7 +915,7 @@ export default function CompliancePage() {
         </div>
         <div className="flex items-center gap-3">
           <div
-            className="w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-semibold text-[#0B1B4A] bg-white"
+            className="w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-semibold text-[#2c2d65] bg-white"
             style={{ boxShadow: "0 0 0 2px #26D9B5" }}
             title={avatarTitle}
           >
@@ -927,7 +927,7 @@ export default function CompliancePage() {
       <main className="flex-1 min-h-0 overflow-y-auto thin-scroll px-3 py-3">
         <div className="w-full bg-[#F4F1E8] rounded-md shadow-[0_1px_3px_rgba(0,0,0,0.35)] overflow-hidden flex flex-col min-h-[calc(100vh-6rem)]">
           <div className="h-14 shrink-0 bg-[#33D8B5] flex items-center justify-center">
-            <h1 className="text-[16px] md:text-[17px] font-semibold text-[#0B1B4A]">
+            <h1 className="text-[16px] md:text-[17px] font-semibold text-[#2c2d65]">
               Compliance Test
             </h1>
           </div>
