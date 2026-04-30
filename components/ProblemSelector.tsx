@@ -45,13 +45,26 @@ function CodeBracketsIcon({ className = "" }: { className?: string }) {
       className={className}
       fill="none"
       stroke="currentColor"
-      strokeWidth={1.6}
+      strokeWidth={1.8}
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden
     >
-      <polyline points="5 4 1.5 8 5 12" />
-      <polyline points="11 4 14.5 8 11 12" />
+      <polyline points="5 4 2 8 5 12" />
+      <polyline points="11 4 14 8 11 12" />
+    </svg>
+  );
+}
+
+function ListWithDotsIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 16 16" className={className} fill="currentColor" aria-hidden>
+      <circle cx="3" cy="4" r="1.2" />
+      <circle cx="3" cy="8" r="1.2" />
+      <circle cx="3" cy="12" r="1.2" />
+      <rect x="6" y="3.2" width="8" height="1.6" rx="0.5" />
+      <rect x="6" y="7.2" width="8" height="1.6" rx="0.5" />
+      <rect x="6" y="11.2" width="8" height="1.6" rx="0.5" />
     </svg>
   );
 }
@@ -180,14 +193,14 @@ export function ProblemSelector() {
           very top of the viewport, including over the header. */}
       {open && (
         <div className="fixed top-0 left-0 bottom-0 w-[280px] bg-[#F2F5EE] border-r border-panelBorder z-50 flex flex-col shadow-xl">
-          <div className="flex items-center justify-between px-4 pt-4 pb-2 shrink-0">
-            <span className="text-[13px] font-semibold text-[#2c2d65]">
+          <div className="flex items-center justify-between px-5 pt-5 pb-3 shrink-0">
+            <span className="text-[15px] font-bold text-[#15163b]">
               Questions
             </span>
             <button
               onClick={() => setOpen(false)}
               aria-label="Close"
-              className="text-[#2c2d65]/70 hover:text-[#2c2d65]"
+              className="text-[#15163b]/70 hover:text-[#15163b]"
             >
               <CloseIcon className="w-4 h-4" />
             </button>
@@ -196,110 +209,79 @@ export function ProblemSelector() {
           {/* Questions card — grows to fill available height; the chat
               (when visible) is pinned to the bottom by the parent flex
               column. */}
-          <div className="flex-1 min-h-0 overflow-y-auto thin-scroll px-3 pb-3">
-            <div className="rounded-md border border-gray-200 shadow-sm">
-              <div className="flex items-center px-3 py-2.5 border-b border-gray-100">
-                <HamburgerIcon className="w-4 h-4 text-[#2c2d65] mr-2" />
-                <span className="flex-1 text-[13px] font-semibold text-[#2c2d65] underline underline-offset-2">
+          <div className="flex-1 min-h-0 overflow-y-auto thin-scroll px-5 pb-3">
+            <div className="border-t border-b border-[#e1e4dc] py-3">
+              <div className="flex items-center pb-3">
+                <ListWithDotsIcon className="w-4 h-4 text-[#15163b] mr-2" />
+                <span className="flex-1 text-[13px] font-bold text-[#15163b] underline underline-offset-2">
                   Coding Hands-on
                 </span>
                 <span
-                  className="inline-flex items-center gap-1 text-[12px] text-emerald-600 mr-2"
+                  className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#15163b] mr-3"
                   title={done + " solved"}
                 >
                   <svg
                     viewBox="0 0 16 16"
-                    className="w-3.5 h-3.5"
+                    className="w-[15px] h-[15px]"
                     fill="none"
                     stroke="currentColor"
-                    strokeWidth={2}
+                    strokeWidth={1.5}
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     aria-hidden
                   >
-                    <polyline points="3 8.5 7 12.5 13 4.5" />
+                    <circle cx="8" cy="8" r="6" />
+                    <polyline points="5 8.5 7 10.5 11 5.5" />
                   </svg>
                   {done}
                 </span>
                 <span
-                  className="inline-flex items-center gap-1 text-[12px] text-gray-500"
-                  title={pending + " unsolved"}
+                  className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#15163b]"
+                  title={total + " total"}
                 >
                   <svg
                     viewBox="0 0 16 16"
-                    className="w-3.5 h-3.5"
+                    className="w-[15px] h-[15px]"
                     fill="none"
                     stroke="currentColor"
-                    strokeWidth={1.8}
+                    strokeWidth={1.5}
                     aria-hidden
                   >
-                    <circle cx="8" cy="8" r="5.5" />
-                    <line x1="8" y1="4.5" x2="8" y2="11.5" />
+                    <circle cx="8" cy="8" r="6" />
+                    <circle cx="5.5" cy="8" r="0.8" fill="currentColor" stroke="none" />
+                    <circle cx="8" cy="8" r="0.8" fill="currentColor" stroke="none" />
+                    <circle cx="10.5" cy="8" r="0.8" fill="currentColor" stroke="none" />
                   </svg>
-                  {pending}
+                  {total}
                 </span>
               </div>
 
-              <ul className="py-1">
-                {problems.map((p) => {
-                  const isActive = p.id === selectedId;
-                  const isDone = !!completed[p.id];
-                  return (
-                    <li key={p.id}>
-                      <button
-                        onClick={() => {
-                          selectProblem(p.id);
-                          setOpen(false);
-                        }}
-                        title={
-                          p.number +
-                          ". " +
-                          p.title +
-                          " (" +
-                          p.difficulty +
-                          ")" +
-                          (isDone ? " - Completed" : "")
-                        }
-                        className={clsx(
-                          "w-full flex items-center gap-2.5 px-3 py-2 text-[13px] text-left transition-colors hover:bg-gray-50",
-                          isActive ? "text-[#2c2d65]" : "text-[#2c2d65]/85"
-                        )}
-                      >
-                        <CodeBracketsIcon
-                          className={clsx(
-                            "w-3.5 h-3.5 shrink-0",
-                            isActive ? "text-[#2c2d65]" : "text-[#2c2d65]/60"
-                          )}
-                        />
-                        <span
-                          className={clsx(
-                            "flex-1",
-                            isActive
-                              ? "font-semibold underline underline-offset-2"
-                              : ""
-                          )}
+              <div className="relative pl-1">
+                <div className="absolute top-0 bottom-1 left-[7px] w-[1px] bg-[#e1e4dc]" />
+                <ul className="relative z-10 flex flex-col gap-2.5 pt-1 pb-1">
+                  {problems.map((p) => {
+                    const isActive = p.id === selectedId;
+                    return (
+                      <li key={p.id}>
+                        <button
+                          onClick={() => {
+                            selectProblem(p.id);
+                            setOpen(false);
+                          }}
+                          className="w-full flex items-center gap-3 pl-[19px] text-[13px] text-[#15163b] text-left group"
                         >
-                          {p.number}. Question {p.number}
-                        </span>
-                        {isDone && (
-                          <svg
-                            viewBox="0 0 16 16"
-                            className="w-3.5 h-3.5 text-emerald-500 shrink-0"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth={2.2}
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            aria-label="Completed"
-                          >
-                            <polyline points="3 8.5 7 12.5 13 4.5" />
-                          </svg>
-                        )}
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
+                          <CodeBracketsIcon
+                            className="w-[13px] h-[13px] shrink-0 text-[#15163b]"
+                          />
+                          <span className="font-bold">
+                            {p.number}. <span className={isActive ? "underline underline-offset-2" : "group-hover:underline group-hover:underline-offset-2"}>Question {p.number}</span>
+                          </span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
             </div>
           </div>
 

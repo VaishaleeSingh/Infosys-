@@ -71,7 +71,7 @@ export function CodeEditor() {
   }, [autoSolved, selectedId, language]);
 
   return (
-    <div className="h-full w-full flex flex-col bg-white relative">
+    <div className="h-full w-full flex flex-col bg-[#f2f5ee] relative">
       <EditorToolbar />
 
       {/* Auto-solve banner — flashes for ~1 second when the 5-second
@@ -86,9 +86,10 @@ export function CodeEditor() {
           now lives on the persistent ActionBar in page.tsx, which is
           anchored to the bottom of the whole right column and stays
           visible even when the test cases frame is hidden. */}
-      <div className="flex-1 min-h-0 relative">
-        <MonacoEditor
-          height="100%"
+      <div className="flex-1 min-h-0 relative px-[8px] pb-[8px]">
+        <div className="h-full w-full bg-white rounded-b-md overflow-hidden">
+          <MonacoEditor
+            height="100%"
           width="100%"
           language={MONACO_LANGUAGE[language] ?? "python"}
           value={code}
@@ -211,6 +212,7 @@ export function CodeEditor() {
             padding: { top: 8, bottom: 8 },
           }}
         />
+        </div>
       </div>
     </div>
   );

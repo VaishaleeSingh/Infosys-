@@ -66,27 +66,23 @@ export function Header() {
             alt="Infosys Wingspan"
             className="h-7 w-auto shrink-0"
           />
-          <div className="flex items-center gap-1.5 text-white/90 text-[13px] truncate">
+          <div className="flex items-center gap-2 ml-5 text-white text-[13px] truncate">
             <svg
               viewBox="0 0 16 16"
               className="w-4 h-4 shrink-0"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={1.6}
-              strokeLinecap="round"
-              strokeLinejoin="round"
+              fill="currentColor"
               aria-hidden
             >
-              <circle cx="8" cy="5.5" r="2.8" />
-              <path d="M2.5 13.5c0-2.5 2.5-4 5.5-4s5.5 1.5 5.5 4" />
+              <circle cx="8" cy="5.5" r="3.2" />
+              <path d="M2.5 13.5c0-2.5 2.5-4 5.5-4s5.5 1.5 5.5 4 Z" />
             </svg>
-            <span className="font-medium truncate">{user?.candidateId ?? "candidate"}</span>
+            <span className="font-bold truncate">{user?.name ?? "candidate"}</span>
           </div>
         </div>
 
         <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
           {/* Timer pill */}
-          <div className="inline-flex items-center h-8 px-4 rounded-md bg-white text-[#2c2d65] text-[13px] font-semibold tracking-tight shadow-sm">
+          <div className="inline-flex items-center h-8 px-4 rounded-md bg-white text-[#2c2d65] text-[13px] font-bold tracking-tight shadow-sm">
             <span>{fmt(remaining)}</span>
           </div>
           {/* Separate camera/recording pill — toggleable via the

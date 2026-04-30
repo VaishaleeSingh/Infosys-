@@ -53,7 +53,7 @@ export function EditorToolbar() {
   };
 
   return (
-    <div className="h-10 bg-white border-b border-panelBorder flex items-center justify-between px-3">
+    <div className="h-10 flex items-center justify-between px-3">
       {/* LEFT: language dropdown + add file (+) */}
       <div className="flex items-center gap-2">
         <div className="relative" ref={ref}>
@@ -121,10 +121,10 @@ export function EditorToolbar() {
       {/* RIGHT: A- / A+ / reset / dark-mode */}
       <div className="flex items-center gap-1">
         <IconBtn label="Decrease font size" onClick={() => {}}>
-          <span className="font-semibold text-[13px]">A<span className="text-[10px]">-</span></span>
+          <span className="font-bold text-[14px]">A<span className="text-[11px] font-bold">-</span></span>
         </IconBtn>
         <IconBtn label="Increase font size" onClick={() => {}}>
-          <span className="font-semibold text-[13px]">A<span className="text-[10px]">+</span></span>
+          <span className="font-bold text-[14px]">A<span className="text-[11px] font-bold">+</span></span>
         </IconBtn>
         <IconBtn label="Reset to starter code" onClick={resetCode}>
           <svg
@@ -132,7 +132,7 @@ export function EditorToolbar() {
             className="w-4 h-4"
             fill="none"
             stroke="currentColor"
-            strokeWidth={1.8}
+            strokeWidth={2.5}
             strokeLinecap="round"
             strokeLinejoin="round"
             aria-hidden
@@ -149,7 +149,7 @@ export function EditorToolbar() {
             className="w-4 h-4"
             fill="none"
             stroke="currentColor"
-            strokeWidth={1.6}
+            strokeWidth={2.5}
             strokeLinecap="round"
             strokeLinejoin="round"
             aria-hidden
