@@ -1,12 +1,15 @@
 "use client";
 
 /**
- * Supabase client + helpers for two features:
+ * Supabase client + helpers for three features:
  *
  *   1. Drawer chat — shared `messages` table with realtime INSERT.
  *   2. Dynamic problem content — `problem_content` overrides table that
  *      lets editors change problem text from Supabase Studio without a
  *      code deploy. Keyed by the same `id` as `lib/problems.ts`.
+ *   3. Dynamic starter / solution code — `problem_code` overrides table
+ *      keyed by `(problem_id, language)`. Lets editors swap the
+ *      template or canonical solution per language without redeploying.
  *
  * Two env vars are required (set in `.env.local`):
  *   - NEXT_PUBLIC_SUPABASE_URL       (e.g. https://xxxx.supabase.co)
@@ -41,10 +44,26 @@
  *   create policy "Public read" on problem_content for select using (true);
  *   alter publication supabase_realtime add table problem_content;
  *
- * Editing flow: in Supabase Studio, insert a row whose `id` matches one
- * of the hardcoded problem ids (e.g. `chefs`, `mss-with-swap`, …). Any
- * column you leave NULL falls back to the hardcoded value. Changes
- * propagate live via the realtime channel — no refresh needed.
+ *   create table problem_code (
+ *     problem_id    text not null,
+ *     language      text not null,    -- 'python' | 'java' | 'cpp' | 'javascript'
+ *     starter_code  text,             -- editor template; NULL = hardcoded
+ *     solution_code text,             -- reference solution; NULL = hardcoded
+ *     updated_at    timestamptz not null default now(),
+ *     primary key (problem_id, language)
+ *   );
+ *   alter table problem_code enable row level security;
+ *   create policy "Public read" on problem_code for select using (true);
+ *   alter publication supabase_realtime add table problem_code;
+ *
+ * Editing flow:
+ *   - For text changes, insert a row in `problem_content` whose `id`
+ *     matches a hardcoded problem id (e.g. `chefs`, `mss-with-swap`).
+ *   - For code changes, insert a row in `problem_code` with
+ *     `(problem_id, language)` matching a hardcoded problem and one
+ *     of the four supported languages.
+ * Any NULL column falls back to the hardcoded value, and both tables
+ * push changes via the realtime channel — no refresh needed.
  *
  * If the env vars are missing, `supabase` will be `null`, the chat UI
  * renders a setup hint, and `fetchProblemContent` returns an empty map
@@ -56,7 +75,19 @@ import {
   type RealtimeChannel,
   type SupabaseClient,
 } from "@supabase/supabase-js";
-import type { ProblemContentOverride } from "@/lib/problems";
+import type {
+  ProblemCodeOverride,
+  ProblemContentOverride,
+} from "@/lib/problems";
+
+type CodeLanguage = "python" | "java" | "cpp" | "javascript";
+
+const CODE_LANGUAGES: ReadonlySet<CodeLanguage> = new Set([
+  "python",
+  "java",
+  "cpp",
+  "javascript",
+]);
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -214,6 +245,113 @@ export function subscribeToProblemContent(
         }
         const row = payload.new as ProblemContentRow | undefined;
         if (row?.id) onUpsert(row.id, rowToOverride(row));
+      },
+    )
+    .subscribe();
+}
+
+/* ------------------------------------------------------------------ */
+/*  Problem code overrides (separate table, keyed by problem+language) */
+/* ------------------------------------------------------------------ */
+
+/** Raw row shape from the `problem_code` table. */
+type ProblemCodeRow = {
+  problem_id: string;
+  language: string; // narrowed to CodeLanguage at parse time
+  starter_code: string | null;
+  solution_code: string | null;
+};
+
+/**
+ * Fetch every override row from `problem_code` and fold them into a
+ * map keyed by problem id. Each entry collects starter and solution
+ * code per language; languages with no row fall back to hardcoded.
+ *
+ * Returns an empty map when Supabase isn't configured or on any
+ * fetch error — the app stays usable on the hardcoded code alone.
+ */
+export async function fetchProblemCode(): Promise<
+  Record<string, ProblemCodeOverride>
+> {
+  if (!supabase) return {};
+  const { data, error } = await supabase
+    .from("problem_code")
+    .select("problem_id, language, starter_code, solution_code");
+  if (error) {
+    console.warn("[supabase] fetch problem_code failed:", error.message);
+    return {};
+  }
+  const out: Record<string, ProblemCodeOverride> = {};
+  for (const row of (data ?? []) as ProblemCodeRow[]) {
+    if (!CODE_LANGUAGES.has(row.language as CodeLanguage)) continue;
+    const lang = row.language as CodeLanguage;
+    const entry = (out[row.problem_id] ??= {});
+    if (row.starter_code !== null) {
+      entry.starterCode = { ...entry.starterCode, [lang]: row.starter_code };
+    }
+    if (row.solution_code !== null) {
+      entry.solutionCode = {
+        ...entry.solutionCode,
+        [lang]: row.solution_code,
+      };
+    }
+  }
+  return out;
+}
+
+/**
+ * Subscribe to live changes on the `problem_code` table.
+ *
+ * Fires `onUpsert(problemId, language, starter, solution)` for INSERT
+ * and UPDATE — `starter` and `solution` are `null` when that column is
+ * NULL in the row. Fires `onDelete(problemId, language)` for DELETE.
+ *
+ * Requires `alter publication supabase_realtime add table problem_code;`
+ * to have been run once in Supabase.
+ */
+export function subscribeToProblemCode(
+  onUpsert: (
+    problemId: string,
+    language: CodeLanguage,
+    starter: string | null,
+    solution: string | null,
+  ) => void,
+  onDelete: (problemId: string, language: CodeLanguage) => void,
+): RealtimeChannel | null {
+  if (!supabase) return null;
+  return supabase
+    .channel("problem-code-changes")
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "problem_code" },
+      (payload) => {
+        if (payload.eventType === "DELETE") {
+          const old = payload.old as {
+            problem_id?: string;
+            language?: string;
+          };
+          if (
+            old?.problem_id &&
+            old.language &&
+            CODE_LANGUAGES.has(old.language as CodeLanguage)
+          ) {
+            onDelete(old.problem_id, old.language as CodeLanguage);
+          }
+          return;
+        }
+        const row = payload.new as ProblemCodeRow | undefined;
+        if (
+          row?.problem_id &&
+          row.language &&
+          CODE_LANGUAGES.has(row.language as CodeLanguage)
+        ) {
+          onUpsert(
+            row.problem_id,
+            row.language as CodeLanguage,
+            row.starter_code,
+            row.solution_code,
+          );
+        }
       },
     )
     .subscribe();

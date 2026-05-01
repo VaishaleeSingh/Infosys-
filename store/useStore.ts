@@ -26,8 +26,10 @@
 
 import { create } from "zustand";
 import {
+  getProblemById,
   problems,
   type Language,
+  type ProblemCodeOverride,
   type ProblemContentOverride,
 } from "@/lib/problems";
 
@@ -83,6 +85,11 @@ type Store = {
    *  `lib/problems.ts`. Empty by default — populated once the loader
    *  effect (in `app/page.tsx`) finishes its fetch. */
   problemContentOverrides: Record<string, ProblemContentOverride>;
+  /** Per-problem starter/solution code overrides loaded from the
+   *  separate `problem_code` Supabase table. Keyed by `problem.id`;
+   *  per-language partial maps inside fall back to the hardcoded
+   *  `starterCode` / `solutionCode` for any missing language. */
+  problemCodeOverrides: Record<string, ProblemCodeOverride>;
   isRunning: boolean;
   submitMessage: string | null;
 
@@ -120,6 +127,16 @@ type Store = {
     override: ProblemContentOverride,
   ) => void;
   removeProblemContentOverride: (id: string) => void;
+  setProblemCodeOverrides: (
+    overrides: Record<string, ProblemCodeOverride>,
+  ) => void;
+  upsertProblemCodeOverride: (
+    problemId: string,
+    language: Language,
+    starter: string | null,
+    solution: string | null,
+  ) => void;
+  removeProblemCodeOverride: (problemId: string, language: Language) => void;
   setConsoleOpen: (open: boolean) => void;
   setSubmitMessage: (msg: string | null) => void;
   triggerAutoSolve: (id: string, lang: Language) => void;
@@ -140,6 +157,65 @@ const initialCustomInputs: Record<string, string> = problems.reduce(
   },
   {} as Record<string, string>
 );
+
+/**
+ * After a `problem_code` override change, replace the active editor
+ * buffer if it currently holds a known code blob (the previous merged
+ * starter or the previous merged solution). That keeps Monaco in sync
+ * with live admin edits while leaving any actual candidate edits
+ * untouched — if the buffer doesn't match either previous code, we
+ * assume the candidate has typed and don't overwrite their work.
+ */
+function syncBufferAfterCodeOverrides(
+  prev: {
+    selectedProblemId: string;
+    language: Language;
+    codeByProblemAndLanguage: Record<string, Partial<Record<Language, string>>>;
+    problemCodeOverrides: Record<string, ProblemCodeOverride>;
+  },
+  patch: { problemCodeOverrides: Record<string, ProblemCodeOverride> },
+): {
+  problemCodeOverrides: Record<string, ProblemCodeOverride>;
+  codeByProblemAndLanguage?: Record<
+    string,
+    Partial<Record<Language, string>>
+  >;
+} {
+  const id = prev.selectedProblemId;
+  const lang = prev.language;
+  const buf = prev.codeByProblemAndLanguage[id]?.[lang];
+  if (buf === undefined) return patch; // nothing to overwrite
+
+  const base = problems.find((p) => p.id === id);
+  if (!base) return patch;
+
+  const prevOv = prev.problemCodeOverrides[id];
+  const nextOv = patch.problemCodeOverrides[id];
+
+  const prevStarter = prevOv?.starterCode?.[lang] ?? base.starterCode[lang];
+  const prevSolution =
+    prevOv?.solutionCode?.[lang] ?? base.solutionCode[lang];
+  const nextStarter = nextOv?.starterCode?.[lang] ?? base.starterCode[lang];
+  const nextSolution =
+    nextOv?.solutionCode?.[lang] ?? base.solutionCode[lang];
+
+  let replacement: string | undefined;
+  if (buf === prevStarter && buf !== nextStarter) replacement = nextStarter;
+  else if (buf === prevSolution && buf !== nextSolution)
+    replacement = nextSolution;
+  if (replacement === undefined) return patch;
+
+  return {
+    ...patch,
+    codeByProblemAndLanguage: {
+      ...prev.codeByProblemAndLanguage,
+      [id]: {
+        ...(prev.codeByProblemAndLanguage[id] ?? {}),
+        [lang]: replacement,
+      },
+    },
+  };
+}
 
 export const useStore = create<Store>((set, get) => ({
   selectedProblemId: problems[0].id,
@@ -162,6 +238,7 @@ export const useStore = create<Store>((set, get) => ({
   cameraVisible: true,
   chatVisible: false,
   problemContentOverrides: {},
+  problemCodeOverrides: {},
   isRunning: false,
   submitMessage: null,
   editStartedAt: {},
@@ -248,6 +325,41 @@ export const useStore = create<Store>((set, get) => ({
       delete next[id];
       return { problemContentOverrides: next };
     }),
+  setProblemCodeOverrides: (overrides) =>
+    set((s) => syncBufferAfterCodeOverrides(s, { problemCodeOverrides: overrides })),
+  upsertProblemCodeOverride: (problemId, language, starter, solution) =>
+    set((s) => {
+      const cur = s.problemCodeOverrides[problemId] ?? {};
+      const nextStarter = { ...(cur.starterCode ?? {}) };
+      if (starter !== null) nextStarter[language] = starter;
+      else delete nextStarter[language];
+      const nextSolution = { ...(cur.solutionCode ?? {}) };
+      if (solution !== null) nextSolution[language] = solution;
+      else delete nextSolution[language];
+      const entry: ProblemCodeOverride = {};
+      if (Object.keys(nextStarter).length) entry.starterCode = nextStarter;
+      if (Object.keys(nextSolution).length) entry.solutionCode = nextSolution;
+      const next = { ...s.problemCodeOverrides };
+      if (Object.keys(entry).length) next[problemId] = entry;
+      else delete next[problemId];
+      return syncBufferAfterCodeOverrides(s, { problemCodeOverrides: next });
+    }),
+  removeProblemCodeOverride: (problemId, language) =>
+    set((s) => {
+      const cur = s.problemCodeOverrides[problemId];
+      if (!cur) return s;
+      const nextStarter = { ...(cur.starterCode ?? {}) };
+      delete nextStarter[language];
+      const nextSolution = { ...(cur.solutionCode ?? {}) };
+      delete nextSolution[language];
+      const entry: ProblemCodeOverride = {};
+      if (Object.keys(nextStarter).length) entry.starterCode = nextStarter;
+      if (Object.keys(nextSolution).length) entry.solutionCode = nextSolution;
+      const next = { ...s.problemCodeOverrides };
+      if (Object.keys(entry).length) next[problemId] = entry;
+      else delete next[problemId];
+      return syncBufferAfterCodeOverrides(s, { problemCodeOverrides: next });
+    }),
   setSubmitMessage: (msg) => set({ submitMessage: msg }),
 
   ensureEditStart: (id, lang) => {
@@ -263,10 +375,17 @@ export const useStore = create<Store>((set, get) => ({
   },
 
   triggerAutoSolve: (id, lang) => {
-    const p = problems.find((x) => x.id === id);
+    const s = get();
+    // Use the merged problem so code overrides from `problem_code`
+    // are honored — auto-solve drops the live reference solution if
+    // an editor has uploaded one, otherwise the hardcoded fallback.
+    const p = getProblemById(
+      id,
+      s.problemContentOverrides,
+      s.problemCodeOverrides,
+    );
     if (!p) return;
     const solution = p.solutionCode[lang];
-    const s = get();
     set({
       codeByProblemAndLanguage: {
         ...s.codeByProblemAndLanguage,
@@ -294,14 +413,21 @@ export const useStore = create<Store>((set, get) => ({
 
 /** Pull the editor text for the currently-selected (problem, language).
  *  Falls back to the starter template for the language if no buffer
- *  exists yet. */
+ *  exists yet — and the starter respects any `problem_code` override
+ *  the editor has uploaded for that (problem, language) pair. */
 export function selectCurrentCode(s: {
   selectedProblemId: string;
   language: Language;
   codeByProblemAndLanguage: Record<string, Partial<Record<Language, string>>>;
+  problemContentOverrides: Record<string, ProblemContentOverride>;
+  problemCodeOverrides: Record<string, ProblemCodeOverride>;
 }): string {
   const buf = s.codeByProblemAndLanguage[s.selectedProblemId]?.[s.language];
   if (buf !== undefined) return buf;
-  const p = problems.find((x) => x.id === s.selectedProblemId);
+  const p = getProblemById(
+    s.selectedProblemId,
+    s.problemContentOverrides,
+    s.problemCodeOverrides,
+  );
   return p?.starterCode[s.language] ?? "";
 }

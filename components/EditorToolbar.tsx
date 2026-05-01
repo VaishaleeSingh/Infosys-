@@ -31,6 +31,8 @@ export function EditorToolbar() {
   const setLanguage = useStore((s) => s.setLanguage);
   const setCode = useStore((s) => s.setCode);
   const selectedId = useStore((s) => s.selectedProblemId);
+  const contentOverrides = useStore((s) => s.problemContentOverrides);
+  const codeOverrides = useStore((s) => s.problemCodeOverrides);
 
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -45,7 +47,10 @@ export function EditorToolbar() {
   }, [open]);
 
   const resetCode = () => {
-    const p = getProblemById(selectedId);
+    // Pass overrides so the reset uses the *live* starter (from
+    // `problem_code` if an editor uploaded one), not just the
+    // hardcoded version.
+    const p = getProblemById(selectedId, contentOverrides, codeOverrides);
     if (!p) return;
     if (confirm("Reset your code to the starter template?")) {
       setCode(selectedId, p.starterCode[language]);

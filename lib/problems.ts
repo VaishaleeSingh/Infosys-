@@ -64,9 +64,10 @@ export type Problem = {
   solutionCode: LangCode;
 };
 
-/** Subset of a Problem that can be overridden at runtime from Supabase
- *  (see `lib/supabase.ts#fetchProblemContent`). Code blobs and the `id`
- *  itself stay hardcoded — only the human-readable content is dynamic. */
+/** Subset of a Problem that can be overridden at runtime from the
+ *  `problem_content` Supabase table (see `lib/supabase.ts#fetchProblemContent`).
+ *  Only human-readable fields — starter and solution code live in the
+ *  separate `problem_code` table and `ProblemCodeOverride` type below. */
 export type ProblemContentOverride = Partial<
   Pick<
     Problem,
@@ -81,6 +82,16 @@ export type ProblemContentOverride = Partial<
     | "samples"
   >
 >;
+
+/** Per-(problem, language) code overrides loaded from the
+ *  `problem_code` Supabase table. Both maps are partial: an editor
+ *  can override just one language's starter code without touching
+ *  the others, and likewise for the reference solution. Languages
+ *  not present here fall back to the hardcoded values in this file. */
+export type ProblemCodeOverride = {
+  starterCode?: Partial<Record<Language, string>>;
+  solutionCode?: Partial<Record<Language, string>>;
+};
 
 /* ------------------------------------------------------------------ */
 /*  Generic per-language scaffolds                                     */
@@ -1167,20 +1178,35 @@ console.log(gameScore(N, M, Two, A, Edges));`),
 ];
 
 /**
- * Look up a problem by id and apply any Supabase-loaded content overrides.
+ * Look up a problem by id and apply any Supabase-loaded overrides.
  *
- * The override map is optional — when omitted (e.g. inside `lib/runner`
- * where overrides aren't relevant), the hardcoded base problem is
- * returned as-is. When passed, fields present in the override replace
- * the hardcoded ones; absent fields fall back to the hardcoded values.
+ * Both override maps are optional — when omitted, the hardcoded base
+ * problem is returned as-is. Content fields (statement, samples, …)
+ * come from `problem_content`; starter and solution code come from
+ * `problem_code`. The two maps merge independently, so code overrides
+ * remain in effect even if there's no row in `problem_content` and
+ * vice versa.
+ *
+ * `starterCode` and `solutionCode` get a *per-language* shallow merge
+ * with the hardcoded map, so an editor can override only one language
+ * without losing the others.
  */
 export function getProblemById(
   id: string,
-  overrides?: Record<string, ProblemContentOverride>,
+  contentOverrides?: Record<string, ProblemContentOverride>,
+  codeOverrides?: Record<string, ProblemCodeOverride>,
 ): Problem | undefined {
   const base = problems.find((p) => p.id === id);
   if (!base) return undefined;
-  const ov = overrides?.[id];
-  if (!ov) return base;
-  return { ...base, ...ov };
+  const cov = contentOverrides?.[id];
+  const codov = codeOverrides?.[id];
+  if (!cov && !codov) return base;
+  const merged: Problem = { ...base, ...(cov ?? {}) };
+  if (codov?.starterCode) {
+    merged.starterCode = { ...merged.starterCode, ...codov.starterCode };
+  }
+  if (codov?.solutionCode) {
+    merged.solutionCode = { ...merged.solutionCode, ...codov.solutionCode };
+  }
+  return merged;
 }

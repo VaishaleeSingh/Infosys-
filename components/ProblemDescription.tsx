@@ -23,8 +23,12 @@ import { Flag } from "lucide-react";
  *  username/ID, tiled across the panel at -22°. Pure decorative — it
  *  sits behind everything via `pointer-events-none`. */
 function Watermark({ text }: { text: string }) {
-  const rows = 14;
-  const cols = 4;
+  // Sparse, evenly-spaced diagonal grid. With each row 200px tall,
+  // 16 rows cover ~3200px (most problem descriptions). Two columns
+  // staggered every other row produce a clean diagonal pattern
+  // without overlapping content blocks.
+  const rows = 16;
+  const cols = 2;
   const cells: React.ReactNode[] = [];
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
@@ -33,11 +37,11 @@ function Watermark({ text }: { text: string }) {
           key={r + "-" + c}
           className="absolute select-none pointer-events-none whitespace-nowrap font-mono"
           style={{
-            top: r * 90 + "px",
-            left: c * 240 + (r % 2) * 120 + "px",
-            transform: "rotate(-22deg)",
-            color: "rgba(70, 70, 100, 0.18)",
-            fontSize: "13px",
+            top: r * 200 + "px",
+            left: c * 540 + (r % 2) * 270 + "px",
+            transform: "rotate(-24deg)",
+            color: "rgba(70, 70, 100, 0.16)",
+            fontSize: "18px",
             fontWeight: 500,
           }}
         >
@@ -47,7 +51,11 @@ function Watermark({ text }: { text: string }) {
     }
   }
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+    // `z-20` puts the watermark *on top of* the problem content (which
+    // sits at `z-10`), so the diagonal text shows through over the
+    // sample-box panels. `pointer-events-none` keeps clicks/scroll
+    // pass-through so the underlying text stays selectable.
+    <div className="absolute inset-0 overflow-hidden pointer-events-none z-20">
       {cells}
     </div>
   );
@@ -83,7 +91,12 @@ export function ProblemDescription() {
         </button>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto teal-scroll relative">
+      <div className="flex-1 min-h-0 overflow-y-auto teal-scroll">
+        {/* Inner relative wrapper so the watermark's `absolute inset-0`
+            spans the FULL content height (not just the viewport),
+            keeping watermarks visible all the way down on long
+            problems. */}
+        <div className="relative">
         <Watermark text={watermarkText} />
         <div className="relative z-10 px-4 sm:px-6 py-5 problem-prose break-words">
         <div className="w-full max-w-3xl">
@@ -201,6 +214,7 @@ export function ProblemDescription() {
 
           <div className="h-40" />
         </div>
+      </div>
       </div>
       </div>
     </div>

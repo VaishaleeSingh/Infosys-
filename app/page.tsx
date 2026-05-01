@@ -53,7 +53,9 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { getProblemById, problems } from "@/lib/problems";
 import { runCode } from "@/lib/runner";
 import {
+  fetchProblemCode,
   fetchProblemContent,
+  subscribeToProblemCode,
   subscribeToProblemContent,
 } from "@/lib/supabase";
 import clsx from "clsx";
@@ -75,11 +77,12 @@ export default function Page() {
   // during an active coding session.
   useAutoSolve();
 
-  // Fetch problem-content overrides from Supabase once on mount, then
-  // keep them in sync with a realtime subscription on `problem_content`.
-  // INSERT/UPDATE → upsert into the store; DELETE → remove. The store
-  // starts empty so missing config or fetch errors leave the hardcoded
-  // content showing unchanged.
+  // Fetch problem-content and problem-code overrides from Supabase once
+  // on mount, then keep both in sync with realtime subscriptions on
+  // `problem_content` and `problem_code`. INSERT/UPDATE → upsert into
+  // the store; DELETE → remove. Both stores start empty so missing
+  // config or fetch errors leave the hardcoded content / code showing
+  // unchanged.
   const setProblemContentOverrides = useStore(
     (s) => s.setProblemContentOverrides,
   );
@@ -89,23 +92,41 @@ export default function Page() {
   const removeProblemContentOverride = useStore(
     (s) => s.removeProblemContentOverride,
   );
+  const setProblemCodeOverrides = useStore((s) => s.setProblemCodeOverrides);
+  const upsertProblemCodeOverride = useStore(
+    (s) => s.upsertProblemCodeOverride,
+  );
+  const removeProblemCodeOverride = useStore(
+    (s) => s.removeProblemCodeOverride,
+  );
   useEffect(() => {
     let cancelled = false;
     fetchProblemContent().then((overrides) => {
       if (!cancelled) setProblemContentOverrides(overrides);
     });
-    const channel = subscribeToProblemContent(
+    fetchProblemCode().then((overrides) => {
+      if (!cancelled) setProblemCodeOverrides(overrides);
+    });
+    const contentChannel = subscribeToProblemContent(
       upsertProblemContentOverride,
       removeProblemContentOverride,
     );
+    const codeChannel = subscribeToProblemCode(
+      upsertProblemCodeOverride,
+      removeProblemCodeOverride,
+    );
     return () => {
       cancelled = true;
-      channel?.unsubscribe();
+      contentChannel?.unsubscribe();
+      codeChannel?.unsubscribe();
     };
   }, [
     setProblemContentOverrides,
     upsertProblemContentOverride,
     removeProblemContentOverride,
+    setProblemCodeOverrides,
+    upsertProblemCodeOverride,
+    removeProblemCodeOverride,
   ]);
 
   // Splitter positions from the store.
@@ -135,6 +156,7 @@ export default function Page() {
     const problem = getProblemById(
       state.selectedProblemId,
       state.problemContentOverrides,
+      state.problemCodeOverrides,
     );
     if (!problem) return [];
     const code = selectCurrentCode(state);
@@ -191,6 +213,7 @@ export default function Page() {
     const problem = getProblemById(
       state.selectedProblemId,
       state.problemContentOverrides,
+      state.problemCodeOverrides,
     );
     if (!problem) return;
     const idx = state.activeCaseIndex;
@@ -240,6 +263,7 @@ export default function Page() {
     const problem = getProblemById(
       state.selectedProblemId,
       state.problemContentOverrides,
+      state.problemCodeOverrides,
     );
     if (!problem) return;
     const code = selectCurrentCode(state);
