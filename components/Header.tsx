@@ -214,7 +214,7 @@ function ReviewModal({
 
         <div className="rounded-md border border-gray-200 px-4 py-3 mb-5 flex items-center">
           <div>
-            <div className="text-[14px] font-semibold text-[#2c2d65]">
+            <div className="text-[14px] font-bold text-[#2c2d65]">
               Coding Hands-on
             </div>
             <div className="text-[11px] text-gray-500">{total} questions</div>

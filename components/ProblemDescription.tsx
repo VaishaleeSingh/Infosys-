@@ -77,9 +77,9 @@ export function ProblemDescription() {
         <button
           type="button"
           title="Flag this question for review"
-          className="text-[#2c2d65]/60 hover:text-[#2c2d65] transition-colors"
+          className="text-black hover:text-black transition-colors"
         >
-          <Flag className="w-3 h-3" strokeWidth={3} />
+          <Flag className="w-3 h-3" strokeWidth={4} />
         </button>
       </div>
 
@@ -147,7 +147,7 @@ export function ProblemDescription() {
                 <div
                   key={i}
                   className={
-                    "px-4 py-2.5 text-[13px] font-mono font-medium text-[#2c2d65]" +
+                    "px-4 py-2.5 text-[13px] font-mono font-bold text-[#2c2d65]" +
                     (i < problem.constraints.length - 1
                       ? " border-b border-[#DCE5DC]"
                       : "")
@@ -166,19 +166,19 @@ export function ProblemDescription() {
           <div className="space-y-5">
             {problem.samples.map((s, i) => (
               <div key={i} className="space-y-2.5">
-                <div className="text-[14px] font-semibold text-[#2c2d65]">
+                <div className="text-[14px] font-bold text-[#2c2d65]">
                   Case {i + 1}
                 </div>
                 <div className="pl-2 space-y-2.5">
                   <div>
-                    <div className="text-[12px] font-semibold text-[#2c2d65] mb-0">
+                    <div className="text-[12px] font-bold text-[#2c2d65] mb-0">
                       Input:
                     </div>
                     <div className="sample-box">{s.input}</div>
                   </div>
                   {s.output !== undefined && (
                     <div>
-                      <div className="text-[12px] font-semibold text-[#2c2d65] mb-0">
+                      <div className="text-[12px] font-bold text-[#2c2d65] mb-0">
                         Output:
                       </div>
                       <div className="sample-box">{s.output}</div>
@@ -186,7 +186,7 @@ export function ProblemDescription() {
                   )}
                   {s.explanation && (
                     <div>
-                      <div className="text-[12px] font-semibold text-[#2c2d65] mb-0">
+                      <div className="text-[12px] font-bold text-[#2c2d65] mb-0">
                         Explanation:
                       </div>
                       <div className="sample-box whitespace-pre-wrap">

@@ -59,7 +59,7 @@ export function EditorToolbar() {
         <div className="relative" ref={ref}>
           <button
             onClick={() => setOpen((v) => !v)}
-            className="h-7 w-[110px] pl-3 pr-2 inline-flex items-center justify-between text-[12px] rounded-md bg-white text-[#2c2d65] border border-gray-300 hover:bg-gray-50"
+            className="h-7 w-[110px] pl-3 pr-2 inline-flex items-center justify-between text-[12px] rounded-lg bg-white text-[#2c2d65] border border-gray-300 hover:bg-gray-50"
             aria-haspopup="menu"
             aria-expanded={open}
           >
@@ -103,18 +103,13 @@ export function EditorToolbar() {
         <button
           aria-label="AI assistant"
           title="AI assistant"
-          className="h-7 w-7 inline-flex items-center justify-center rounded-md bg-[#2c2d65] text-white hover:bg-[#15235E] transition-colors"
+          className="h-7 w-7 inline-flex items-center justify-center rounded-md overflow-hidden hover:opacity-80 transition-opacity"
         >
-          {/* AI assistant — chat bubble with sparkle (compact). */}
-          <svg
-            viewBox="0 0 16 16"
-            className="w-4 h-4"
-            fill="currentColor"
-            aria-hidden
-          >
-            <path d="M3 2.5 h10 a1.5 1.5 0 0 1 1.5 1.5 v6 a1.5 1.5 0 0 1 -1.5 1.5 h-3 l-2 2 v-2 h-5 a1.5 1.5 0 0 1 -1.5 -1.5 v-6 a1.5 1.5 0 0 1 1.5 -1.5 z" />
-            <path d="M8 4.2 L8.7 6.3 L10.8 7 L8.7 7.7 L8 9.8 L7.3 7.7 L5.2 7 L7.3 6.3 Z" fill="white" />
-          </svg>
+          <img
+            src="/ChatGPT Image May 1, 2026, 09_05_13 AM.png"
+            alt="AI assistant"
+            className="w-full h-full object-cover"
+          />
         </button>
       </div>
 

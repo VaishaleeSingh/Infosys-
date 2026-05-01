@@ -213,7 +213,7 @@ export function ProblemSelector() {
             <div className="border-t border-b border-[#e1e4dc] py-3">
               <div className="flex items-center pb-3">
                 <ListWithDotsIcon className="w-4 h-4 text-[#15163b] mr-2" />
-                <span className="flex-1 text-[13px] font-bold text-[#15163b] underline underline-offset-2">
+                <span className="flex-1 text-[13px] font-extrabold text-[#2c2d65] underline underline-offset-2">
                   Coding Hands-on
                 </span>
                 <span

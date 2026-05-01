@@ -49,7 +49,7 @@ body {
 /* ------------------------------------------------------------------ */
 .problem-prose h2 {
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: 800;
   color: #2c2d65;
   margin-top: 1.25rem;
   margin-bottom: 0.5rem;
@@ -98,6 +98,7 @@ body {
   padding: 10px 12px;
   font-family: "Fira Code", Consolas, monospace;
   font-size: 0.85rem;
+  font-weight: 700;
   white-space: pre-wrap;
   overflow-wrap: break-word;
   word-break: break-word;
